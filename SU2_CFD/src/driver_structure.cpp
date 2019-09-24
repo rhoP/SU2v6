@@ -1177,7 +1177,8 @@ void CDriver::Solver_Preprocessing(CSolver ****solver_container, CGeometry ***ge
   spalart_allmaras, neg_spalart_allmaras, menter_sst, transition,
   template_solver, disc_adj, disc_adj_turb, disc_adj_heat,
   fem_dg_flow, fem_dg_shock_persson,
-  e_spalart_allmaras, comp_spalart_allmaras, e_comp_spalart_allmaras;
+  e_spalart_allmaras, comp_spalart_allmaras, e_comp_spalart_allmaras,
+  ml_spalart_allmaras;
   
   /*--- Count the number of DOFs per solution point. ---*/
   
@@ -1189,7 +1190,7 @@ void CDriver::Solver_Preprocessing(CSolver ****solver_container, CGeometry ***ge
   fem_euler        = false;  fem_ns          = false;  fem_turbulent = false;
   adj_euler        = false;  adj_ns          = false;  adj_turb      = false;
   spalart_allmaras = false;  menter_sst      = false;  disc_adj_turb = false;
-  neg_spalart_allmaras = false;
+  neg_spalart_allmaras = false; ml_spalart_allmaras = false;
   disc_adj         = false;
   fem              = false;  disc_adj_fem     = false;
   heat_fvm         = false;  disc_adj_heat    = false;
@@ -1249,6 +1250,7 @@ void CDriver::Solver_Preprocessing(CSolver ****solver_container, CGeometry ***ge
       case SA_E:   e_spalart_allmaras = true;   break;
       case SA_COMP: comp_spalart_allmaras = true; break;
       case SA_E_COMP: e_comp_spalart_allmaras = true; break;
+      case ML_SA: ml_spalart_allmaras = true; break;
       default: SU2_MPI::Error("Specified turbulence model unavailable or none selected", CURRENT_FUNCTION); break;
     }
   
@@ -1287,7 +1289,7 @@ void CDriver::Solver_Preprocessing(CSolver ****solver_container, CGeometry ***ge
       if (iMGlevel == MESH_0) DOFsPerPoint += solver_container[val_iInst][iMGlevel][FLOW_SOL]->GetnVar();
     }
     if (turbulent) {
-      if (spalart_allmaras || e_spalart_allmaras || comp_spalart_allmaras || e_comp_spalart_allmaras || neg_spalart_allmaras) {
+      if (spalart_allmaras || e_spalart_allmaras || comp_spalart_allmaras || e_comp_spalart_allmaras || neg_spalart_allmaras || ml_spalart_allmaras) {
         solver_container[val_iInst][iMGlevel][TURB_SOL] = new CTurbSASolver(geometry[val_iInst][iMGlevel], config, iMGlevel, solver_container[val_iInst][iMGlevel][FLOW_SOL]->GetFluidModel() );
         solver_container[val_iInst][iMGlevel][FLOW_SOL]->Preprocessing(geometry[val_iInst][iMGlevel], solver_container[val_iInst][iMGlevel], config, iMGlevel, NO_RK_ITER, RUNTIME_FLOW_SYS, false);
         solver_container[val_iInst][iMGlevel][TURB_SOL]->Postprocessing(geometry[val_iInst][iMGlevel], solver_container[val_iInst][iMGlevel], config, iMGlevel);
@@ -1672,7 +1674,7 @@ void CDriver::Solver_Postprocessing(CSolver ****solver_container, CGeometry **ge
   heat_fvm, fem,
   spalart_allmaras, neg_spalart_allmaras, menter_sst, transition,
   template_solver, disc_adj, disc_adj_turb, disc_adj_fem, disc_adj_heat,
-  e_spalart_allmaras, comp_spalart_allmaras, e_comp_spalart_allmaras;
+  e_spalart_allmaras, comp_spalart_allmaras, e_comp_spalart_allmaras, ml_spalart_allmaras;
 
   /*--- Initialize some useful booleans ---*/
   
@@ -1686,6 +1688,7 @@ void CDriver::Solver_Postprocessing(CSolver ****solver_container, CGeometry **ge
   transition       = false;
   template_solver  = false;
   e_spalart_allmaras = false; comp_spalart_allmaras = false; e_comp_spalart_allmaras = false;
+  ml_spalart_allmaras = false;
 
   /*--- Assign booleans ---*/
   
@@ -1723,6 +1726,7 @@ void CDriver::Solver_Postprocessing(CSolver ****solver_container, CGeometry **ge
     case SA_E: e_spalart_allmaras = true; break;
     case SA_COMP: comp_spalart_allmaras = true; break;
     case SA_E_COMP: e_comp_spalart_allmaras = true; break;
+    case ML_SA: ml_spalart_allmaras = true; break;
     }
   
   /*--- Definition of the Class for the solution: solver_container[DOMAIN][MESH_LEVEL][EQUATION]. Note that euler, ns
@@ -1759,7 +1763,7 @@ void CDriver::Solver_Postprocessing(CSolver ****solver_container, CGeometry **ge
     }
 
     if (turbulent) {
-      if (spalart_allmaras || neg_spalart_allmaras || menter_sst || e_spalart_allmaras || comp_spalart_allmaras || e_comp_spalart_allmaras) {
+      if (spalart_allmaras || neg_spalart_allmaras || menter_sst || e_spalart_allmaras || comp_spalart_allmaras || e_comp_spalart_allmaras|| ml_spalart_allmaras) {
         delete solver_container[val_iInst][iMGlevel][TURB_SOL];
       }
       if (transition) {
@@ -1956,7 +1960,7 @@ void CDriver::Numerics_Preprocessing(CNumerics *****numerics_container,
   heat_fvm,
   transition,
   template_solver;
-  bool e_spalart_allmaras, comp_spalart_allmaras, e_comp_spalart_allmaras;
+  bool e_spalart_allmaras, comp_spalart_allmaras, e_comp_spalart_allmaras, ml_spalart_allmaras;
   
   bool compressible = (config->GetKind_Regime() == COMPRESSIBLE);
   bool incompressible = (config->GetKind_Regime() == INCOMPRESSIBLE);
@@ -1973,6 +1977,7 @@ void CDriver::Numerics_Preprocessing(CNumerics *****numerics_container,
   transition       = false;
   template_solver  = false;
   e_spalart_allmaras = false; comp_spalart_allmaras = false; e_comp_spalart_allmaras = false;
+  ml_spalart_allmaras = false;
   
   /*--- Assign booleans ---*/
   switch (config->GetKind_Solver()) {
@@ -2000,6 +2005,7 @@ void CDriver::Numerics_Preprocessing(CNumerics *****numerics_container,
       case SA_E:   e_spalart_allmaras = true; break;
       case SA_COMP:   comp_spalart_allmaras = true; break;
       case SA_E_COMP:   e_comp_spalart_allmaras = true; break;
+      case ML_SA:   ml_spalart_allmaras = true; break;
       case SST:    menter_sst = true; constants = solver_container[val_iInst][MESH_0][TURB_SOL]->GetConstants(); break;
       default: SU2_MPI::Error("Specified turbulence model unavailable or none selected", CURRENT_FUNCTION); break;
     }
@@ -2374,7 +2380,7 @@ void CDriver::Numerics_Preprocessing(CNumerics *****numerics_container,
         break;
       case SPACE_UPWIND :
         for (iMGlevel = 0; iMGlevel <= config->GetnMGLevels(); iMGlevel++) {
-          if (spalart_allmaras || neg_spalart_allmaras || e_spalart_allmaras || comp_spalart_allmaras || e_comp_spalart_allmaras ) {
+          if (spalart_allmaras || neg_spalart_allmaras || e_spalart_allmaras || comp_spalart_allmaras || e_comp_spalart_allmaras || ml_spalart_allmaras) {
             numerics_container[val_iInst][iMGlevel][TURB_SOL][CONV_TERM] = new CUpwSca_TurbSA(nDim, nVar_Turb, config);
           }
           else if (menter_sst) numerics_container[val_iInst][iMGlevel][TURB_SOL][CONV_TERM] = new CUpwSca_TurbSST(nDim, nVar_Turb, config);
