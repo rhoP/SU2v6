@@ -1040,7 +1040,8 @@ void CDriver::Solver_Preprocessing(CConfig* config, CGeometry** geometry, CSolve
       adj_euler, adj_ns, adj_turb,
       heat_fvm,
       fem, disc_adj_fem,
-      spalart_allmaras, neg_spalart_allmaras, menter_sst, transition,
+      spalart_allmaras, neg_spalart_allmaras, ml_spalart_allmaras,
+      menter_sst, transition,
       template_solver, disc_adj, disc_adj_turb, disc_adj_heat,
       fem_dg_flow, fem_dg_shock_persson,
       e_spalart_allmaras, comp_spalart_allmaras, e_comp_spalart_allmaras;
@@ -1055,7 +1056,7 @@ void CDriver::Solver_Preprocessing(CConfig* config, CGeometry** geometry, CSolve
   fem_euler        = false;  fem_ns          = false;  fem_turbulent = false;
   adj_euler        = false;  adj_ns          = false;  adj_turb      = false;
   spalart_allmaras = false;  menter_sst      = false;  disc_adj_turb = false;
-  neg_spalart_allmaras = false;
+  neg_spalart_allmaras = false; ml_spalart_allmaras = false;
   disc_adj         = false;
   fem              = false;  disc_adj_fem     = false;
   heat_fvm         = false;  disc_adj_heat    = false;
@@ -1122,6 +1123,7 @@ void CDriver::Solver_Preprocessing(CConfig* config, CGeometry** geometry, CSolve
       case SA_E_COMP: e_comp_spalart_allmaras = true; break;
       case SST:       menter_sst = true;              break;
       case SST_SUST:  menter_sst = true;              break;
+      case SA_ML:     ml_spalart_allmaras = true;     break;
       default: SU2_MPI::Error("Specified turbulence model unavailable or none selected", CURRENT_FUNCTION); break;
     }
   
@@ -1160,7 +1162,7 @@ void CDriver::Solver_Preprocessing(CConfig* config, CGeometry** geometry, CSolve
       if (iMGlevel == MESH_0) DOFsPerPoint += solver[iMGlevel][FLOW_SOL]->GetnVar();
     }
     if (turbulent) {
-      if (spalart_allmaras || e_spalart_allmaras || comp_spalart_allmaras || e_comp_spalart_allmaras || neg_spalart_allmaras) {
+      if (spalart_allmaras || e_spalart_allmaras || comp_spalart_allmaras || e_comp_spalart_allmaras || neg_spalart_allmaras || ml_spalart_allmaras) {
         solver[iMGlevel][TURB_SOL] = new CTurbSASolver(geometry[iMGlevel], config, iMGlevel, solver[iMGlevel][FLOW_SOL]->GetFluidModel() );
         solver[iMGlevel][FLOW_SOL]->Preprocessing(geometry[iMGlevel], solver[iMGlevel], config, iMGlevel, NO_RK_ITER, RUNTIME_FLOW_SYS, false);
         solver[iMGlevel][TURB_SOL]->Postprocessing(geometry[iMGlevel], solver[iMGlevel], config, iMGlevel);
@@ -1558,8 +1560,8 @@ void CDriver::Solver_Postprocessing(CSolver ****solver, CGeometry **geometry,
   bool euler, ns, turbulent,
   adj_euler, adj_ns, adj_turb,
   heat_fvm, fem,
-  spalart_allmaras, neg_spalart_allmaras, menter_sst, transition,
-  template_solver, disc_adj, disc_adj_turb, disc_adj_fem, disc_adj_heat,
+  spalart_allmaras, neg_spalart_allmaras, menter_sst, ml_spalart_allmaras,
+  transition, template_solver, disc_adj, disc_adj_turb, disc_adj_fem, disc_adj_heat,
   e_spalart_allmaras, comp_spalart_allmaras, e_comp_spalart_allmaras;
 
   /*--- Initialize some useful booleans ---*/
@@ -1567,7 +1569,7 @@ void CDriver::Solver_Postprocessing(CSolver ****solver, CGeometry **geometry,
   euler            = false;  ns              = false;  turbulent = false;
   adj_euler        = false;  adj_ns          = false;  adj_turb  = false;
   spalart_allmaras = false;  menter_sst      = false;  disc_adj_turb = false;
-  neg_spalart_allmaras = false;
+  neg_spalart_allmaras = false; ml_spalart_allmaras = false;
   disc_adj        = false;
   fem              = false;  disc_adj_fem    = false;
   heat_fvm        = false;   disc_adj_heat   = false;
@@ -1612,6 +1614,7 @@ void CDriver::Solver_Postprocessing(CSolver ****solver, CGeometry **geometry,
     case SA_E_COMP: e_comp_spalart_allmaras = true; break;
     case SST:       menter_sst = true;              break;
     case SST_SUST:  menter_sst = true;              break;
+    case SA_ML:     ml_spalart_allmaras=true;       break;
     default: SU2_MPI::Error("Specified turbulence model unavailable or none selected", CURRENT_FUNCTION); break;
     }
   
@@ -1649,7 +1652,7 @@ void CDriver::Solver_Postprocessing(CSolver ****solver, CGeometry **geometry,
     }
 
     if (turbulent) {
-      if (spalart_allmaras || neg_spalart_allmaras || menter_sst || e_spalart_allmaras || comp_spalart_allmaras || e_comp_spalart_allmaras) {
+      if (spalart_allmaras || neg_spalart_allmaras || menter_sst || e_spalart_allmaras || comp_spalart_allmaras || e_comp_spalart_allmaras || ml_spalart_allmaras) {
         delete solver[val_iInst][iMGlevel][TURB_SOL];
       }
       if (transition) {
@@ -1853,6 +1856,7 @@ void CDriver::Numerics_Preprocessing(CConfig *config, CGeometry **geometry, CSol
   turbulent, adj_turb,
   fem_euler, fem_ns, fem_turbulent,
   spalart_allmaras, neg_spalart_allmaras, menter_sst,
+  ml_spalart_allmaras,
   fem,
   heat_fvm,
   transition,
@@ -1871,7 +1875,7 @@ void CDriver::Numerics_Preprocessing(CConfig *config, CGeometry **geometry, CSol
   heat_fvm         = false;
   fem              = false;
   spalart_allmaras = false; neg_spalart_allmaras = false;	menter_sst       = false;
-  transition       = false;
+  transition       = false; ml_spalart_allmaras = false;
   template_solver  = false;
   e_spalart_allmaras = false; comp_spalart_allmaras = false; e_comp_spalart_allmaras = false;
   
@@ -1906,6 +1910,7 @@ void CDriver::Numerics_Preprocessing(CConfig *config, CGeometry **geometry, CSol
       case SA_E_COMP: e_comp_spalart_allmaras = true; break;
       case SST:       menter_sst = true;              break;
       case SST_SUST:  menter_sst = true;              break;
+      case SA_ML:     ml_spalart_allmaras = true;     break;
       default: SU2_MPI::Error("Specified turbulence model unavailable or none selected", CURRENT_FUNCTION); break;
     }
 
@@ -2285,7 +2290,7 @@ void CDriver::Numerics_Preprocessing(CConfig *config, CGeometry **geometry, CSol
         break;
       case SPACE_UPWIND :
         for (iMGlevel = 0; iMGlevel <= config->GetnMGLevels(); iMGlevel++) {
-          if (spalart_allmaras || neg_spalart_allmaras || e_spalart_allmaras || comp_spalart_allmaras || e_comp_spalart_allmaras ) {
+          if (spalart_allmaras || neg_spalart_allmaras || e_spalart_allmaras || comp_spalart_allmaras || e_comp_spalart_allmaras || ml_spalart_allmaras) {
             numerics[iMGlevel][TURB_SOL][CONV_TERM] = new CUpwSca_TurbSA(nDim, nVar_Turb, config);
           }
           else if (menter_sst) numerics[iMGlevel][TURB_SOL][CONV_TERM] = new CUpwSca_TurbSST(nDim, nVar_Turb, config);
@@ -2299,7 +2304,7 @@ void CDriver::Numerics_Preprocessing(CConfig *config, CGeometry **geometry, CSol
     /*--- Definition of the viscous scheme for each equation and mesh level ---*/
     
     for (iMGlevel = 0; iMGlevel <= config->GetnMGLevels(); iMGlevel++) {
-      if (spalart_allmaras || e_spalart_allmaras || comp_spalart_allmaras || e_comp_spalart_allmaras){
+      if (spalart_allmaras || e_spalart_allmaras || comp_spalart_allmaras || e_comp_spalart_allmaras || ml_spalart_allmaras){
         numerics[iMGlevel][TURB_SOL][VISC_TERM] = new CAvgGrad_TurbSA(nDim, nVar_Turb, true, config);
       }
       else if (neg_spalart_allmaras) numerics[iMGlevel][TURB_SOL][VISC_TERM] = new CAvgGrad_TurbSA_Neg(nDim, nVar_Turb, true, config);
@@ -2310,6 +2315,7 @@ void CDriver::Numerics_Preprocessing(CConfig *config, CGeometry **geometry, CSol
     
     for (iMGlevel = 0; iMGlevel <= config->GetnMGLevels(); iMGlevel++) {
       if (spalart_allmaras) numerics[iMGlevel][TURB_SOL][SOURCE_FIRST_TERM] = new CSourcePieceWise_TurbSA(nDim, nVar_Turb, config);
+      else if (ml_spalart_allmaras) numerics[iMGlevel][TURB_SOL][SOURCE_FIRST_TERM] = new CSourcePieceWise_TurbSA_ML(nDim, nVar_Turb, config);
       else if (e_spalart_allmaras) numerics[iMGlevel][TURB_SOL][SOURCE_FIRST_TERM] = new CSourcePieceWise_TurbSA_E(nDim, nVar_Turb, config);
       else if (comp_spalart_allmaras) numerics[iMGlevel][TURB_SOL][SOURCE_FIRST_TERM] = new CSourcePieceWise_TurbSA_COMP(nDim, nVar_Turb, config);
       else if (e_comp_spalart_allmaras) numerics[iMGlevel][TURB_SOL][SOURCE_FIRST_TERM] = new CSourcePieceWise_TurbSA_E_COMP(nDim, nVar_Turb, config);
@@ -2321,7 +2327,7 @@ void CDriver::Numerics_Preprocessing(CConfig *config, CGeometry **geometry, CSol
     /*--- Definition of the boundary condition method ---*/
     
     for (iMGlevel = 0; iMGlevel <= config->GetnMGLevels(); iMGlevel++) {
-      if (spalart_allmaras || e_spalart_allmaras || comp_spalart_allmaras || e_comp_spalart_allmaras) {
+      if (spalart_allmaras || e_spalart_allmaras || comp_spalart_allmaras || e_comp_spalart_allmaras || ml_spalart_allmaras) {
         numerics[iMGlevel][TURB_SOL][CONV_BOUND_TERM] = new CUpwSca_TurbSA(nDim, nVar_Turb, config);
         numerics[iMGlevel][TURB_SOL][VISC_BOUND_TERM] = new CAvgGrad_TurbSA(nDim, nVar_Turb, false, config);
       }
@@ -2543,7 +2549,7 @@ void CDriver::Numerics_Preprocessing(CConfig *config, CGeometry **geometry, CSol
         break;
       case SPACE_UPWIND :
         for (iMGlevel = 0; iMGlevel <= config->GetnMGLevels(); iMGlevel++)
-          if (spalart_allmaras) {
+          if (spalart_allmaras || ml_spalart_allmaras) {
             numerics[iMGlevel][ADJTURB_SOL][CONV_TERM] = new CUpwSca_AdjTurb(nDim, nVar_Adj_Turb, config);
           }
           else if (neg_spalart_allmaras) {SU2_MPI::Error("Adjoint Neg SA turbulence model not implemented.", CURRENT_FUNCTION);}
@@ -2559,7 +2565,7 @@ void CDriver::Numerics_Preprocessing(CConfig *config, CGeometry **geometry, CSol
     
     /*--- Definition of the viscous scheme for each equation and mesh level ---*/
     for (iMGlevel = 0; iMGlevel <= config->GetnMGLevels(); iMGlevel++) {
-      if (spalart_allmaras) {
+      if (spalart_allmaras || ml_spalart_allmaras) {
         numerics[iMGlevel][ADJTURB_SOL][VISC_TERM] = new CAvgGradCorrected_AdjTurb(nDim, nVar_Adj_Turb, config);
       }
 
@@ -2576,6 +2582,11 @@ void CDriver::Numerics_Preprocessing(CConfig *config, CGeometry **geometry, CSol
         numerics[iMGlevel][ADJTURB_SOL][SOURCE_FIRST_TERM] = new CSourcePieceWise_AdjTurb(nDim, nVar_Adj_Turb, config);
         numerics[iMGlevel][ADJTURB_SOL][SOURCE_SECOND_TERM] = new CSourceConservative_AdjTurb(nDim, nVar_Adj_Turb, config);
       }
+      // TODO check and finish the adjoint turbulent source integration
+      //else if (ml_spalart_allmaras) {
+      //    numerics[iMGlevel][ADJTURB_SOL][SOURCE_FIRST_TERM] = new CSourcePieceWise_AdjTurb_ML(nDim, nVar_Adj_Turb, config);
+      //    numerics[iMGlevel][ADJTURB_SOL][SOURCE_SECOND_TERM] = new CSourceConservative_AdjTurb_ML(nDim, nVar_Adj_Turb, config);
+      //}
       else if (neg_spalart_allmaras) {SU2_MPI::Error("Adjoint Neg SA turbulence model not implemented.", CURRENT_FUNCTION);}
       else if (menter_sst) {SU2_MPI::Error("Adjoint SST turbulence model not implemented.", CURRENT_FUNCTION);}
       else if (e_spalart_allmaras) {SU2_MPI::Error("Adjoint Edward's SA turbulence model not implemented.", CURRENT_FUNCTION);}
@@ -2586,6 +2597,7 @@ void CDriver::Numerics_Preprocessing(CConfig *config, CGeometry **geometry, CSol
     /*--- Definition of the boundary condition method ---*/
     for (iMGlevel = 0; iMGlevel <= config->GetnMGLevels(); iMGlevel++) {
       if (spalart_allmaras) numerics[iMGlevel][ADJTURB_SOL][CONV_BOUND_TERM] = new CUpwLin_AdjTurb(nDim, nVar_Adj_Turb, config);
+      // TODO finish the adjoint turbulent bounday conditions
       else if (neg_spalart_allmaras) {SU2_MPI::Error("Adjoint Neg SA turbulence model not implemented.", CURRENT_FUNCTION);}
       else if (menter_sst) {SU2_MPI::Error("Adjoint SST turbulence model not implemented.", CURRENT_FUNCTION);}
       else if (e_spalart_allmaras) {SU2_MPI::Error("Adjoint Edward's SA turbulence model not implemented.", CURRENT_FUNCTION);}
@@ -2685,6 +2697,7 @@ void CDriver::Numerics_Postprocessing(CNumerics *****numerics,
   fem_euler, fem_ns, fem_turbulent,
   turbulent, adj_turb,
   spalart_allmaras, neg_spalart_allmaras, menter_sst,
+  ml_spalart_allmaras,
   fem,
   heat_fvm,
   transition,
@@ -2703,7 +2716,7 @@ void CDriver::Numerics_Postprocessing(CNumerics *****numerics,
   spalart_allmaras = false;   neg_spalart_allmaras = false; menter_sst       = false;
   transition       = false;   heat_fvm         = false;
   template_solver  = false;
-    
+  ml_spalart_allmaras = false;
   e_spalart_allmaras = false; comp_spalart_allmaras = false; e_comp_spalart_allmaras = false;
 
   /*--- Assign booleans ---*/
@@ -2737,6 +2750,7 @@ void CDriver::Numerics_Postprocessing(CNumerics *****numerics,
       case SA_E_COMP: e_comp_spalart_allmaras = true; break;
       case SST:       menter_sst = true;              break;
       case SST_SUST:  menter_sst = true;              break;
+      case SA_ML:     ml_spalart_allmaras = true;     break;
       default: SU2_MPI::Error("Specified turbulence model unavailable or none selected", CURRENT_FUNCTION); break;
     }
   
@@ -2873,7 +2887,7 @@ void CDriver::Numerics_Postprocessing(CNumerics *****numerics,
     switch (config->GetKind_ConvNumScheme_Turb()) {
       case SPACE_UPWIND :
         for (iMGlevel = 0; iMGlevel <= config->GetnMGLevels(); iMGlevel++) {
-          if (spalart_allmaras || neg_spalart_allmaras ||menter_sst|| comp_spalart_allmaras || e_spalart_allmaras || e_comp_spalart_allmaras)
+          if (spalart_allmaras || neg_spalart_allmaras ||menter_sst|| comp_spalart_allmaras || e_spalart_allmaras || e_comp_spalart_allmaras || ml_spalart_allmaras)
             delete numerics[val_iInst][iMGlevel][TURB_SOL][CONV_TERM];
         }
         break;
@@ -2881,7 +2895,7 @@ void CDriver::Numerics_Postprocessing(CNumerics *****numerics,
     
     /*--- Definition of the viscous scheme for each equation and mesh level ---*/
     
-      if (spalart_allmaras || neg_spalart_allmaras ||menter_sst|| comp_spalart_allmaras || e_spalart_allmaras || e_comp_spalart_allmaras){
+      if (spalart_allmaras || neg_spalart_allmaras ||menter_sst|| comp_spalart_allmaras || e_spalart_allmaras || e_comp_spalart_allmaras || ml_spalart_allmaras){
         for (iMGlevel = 0; iMGlevel <= config->GetnMGLevels(); iMGlevel++) {
           delete numerics[val_iInst][iMGlevel][TURB_SOL][VISC_TERM];
           delete numerics[val_iInst][iMGlevel][TURB_SOL][SOURCE_FIRST_TERM];
@@ -3041,7 +3055,7 @@ void CDriver::Numerics_Postprocessing(CNumerics *****numerics,
         
       case SPACE_UPWIND :
         for (iMGlevel = 0; iMGlevel <= config->GetnMGLevels(); iMGlevel++)
-          if (spalart_allmaras) {
+          if (spalart_allmaras || ml_spalart_allmaras) {
             delete numerics[val_iInst][iMGlevel][ADJTURB_SOL][CONV_TERM];
           }
         break;
@@ -3049,7 +3063,7 @@ void CDriver::Numerics_Postprocessing(CNumerics *****numerics,
     
     
     for (iMGlevel = 0; iMGlevel <= config->GetnMGLevels(); iMGlevel++) {
-      if (spalart_allmaras) {
+      if (spalart_allmaras || ml_spalart_allmaras) {
         /*--- Definition of the viscous scheme for each equation and mesh level ---*/
         delete numerics[val_iInst][iMGlevel][ADJTURB_SOL][VISC_TERM];
         /*--- Definition of the source term integration scheme for each equation and mesh level ---*/

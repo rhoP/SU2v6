@@ -219,7 +219,7 @@ public:
   /*! 
    * \brief Constructor of the class. 
    */
-  COutput(CConfig *congig);
+  COutput(CConfig *config);
 
   /*! 
    * \brief Destructor of the class. 
