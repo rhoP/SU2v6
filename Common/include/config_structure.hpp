@@ -766,7 +766,8 @@ private:
   SurfAdjCoeff_FileName,			/*!< \brief Output file with the adjoint variables on the surface. */
   New_SU2_FileName,       		/*!< \brief Output SU2 mesh file converted from CGNS format. */
   SurfSens_FileName,			/*!< \brief Output file for the sensitivity on the surface (discrete adjoint). */
-  VolSens_FileName;			/*!< \brief Output file for the sensitivity in the volume (discrete adjoint). */
+  VolSens_FileName,			/*!< \brief Output file for the sensitivity in the volume (discrete adjoint). */
+  MLParam_FileName;             /*!< \brief Input file containing the machine learning parameter values. */
   bool Low_MemoryOutput,      /*!< \brief Output less information for lower memory use */
   Wrt_Output,                 /*!< \brief Write any output files */
   Wrt_Vol_Sol,                /*!< \brief Write a volume solution file */
@@ -5612,7 +5613,13 @@ public:
    * \return Name of the file with the iteration number for an unsteady solution file.
    */
   string GetUnsteady_FileName(string val_filename, int val_iter);
-  
+
+  /*!
+   * \brief Get name of the input grid.
+   * \return File name of the input grid.
+   */
+  string GetMLParam_FileName(void);
+
   /*!
    * \brief Append the input filename string with the appropriate objective function extension.
    * \param[in] val_filename - String value of the base filename.
