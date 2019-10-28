@@ -5190,7 +5190,7 @@ void CConfig::SetOutput(unsigned short val_software, unsigned short val_izone) {
           case SA_E_COMP: cout << "Compressibility Correction Edwards Spalart Allmaras" << endl; break;
           case SST:       cout << "Menter's SST"     << endl; break;
           case SST_SUST:  cout << "Menter's SST with sustaining terms" << endl; break;
-          case SA_ML:     cout << "Machine Learning with Spalart Allmaras" << endl << "Parameters contained in file: " << MLParam_FileName<< endl ; break;
+          case SA_ML:     cout << "Machine Learning with Spalart Allmaras" << endl ; break;
         }
         if (QCR) cout << "Using Quadratic Constitutive Relation, 2000 version (QCR2000)" << endl;
         cout << "Hybrid RANS/LES: ";
@@ -5434,6 +5434,10 @@ void CConfig::SetOutput(unsigned short val_software, unsigned short val_izone) {
   }
 
   cout << "Input mesh file name: " << Mesh_FileName << endl;
+
+  if (Kind_Turb_Model == SA_ML){
+      cout << "Input file name for machine learning of SA turbulence model: " << MLParam_FileName << endl;
+  }
 
 	if (val_software == SU2_DOT) {
     if (DiscreteAdjoint) {

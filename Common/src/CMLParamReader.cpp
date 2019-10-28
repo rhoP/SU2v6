@@ -40,7 +40,8 @@
 
 CMLParamReader::CMLParamReader(CConfig        *val_config,
                                                unsigned short val_iZone,
-                                               unsigned short val_nZone)
+                                               unsigned short val_nZone,
+                                               unsigned long global_points)
         : CMeshReaderFVM(val_config, val_iZone, val_nZone) {
 
     /* Store the current zone to be read and the total number of zones. */
@@ -51,27 +52,27 @@ CMLParamReader::CMLParamReader(CConfig        *val_config,
     MLParam_Filename = config->GetMLParam_FileName();
 
     /* Read the basic metadata and perform some basic error checks. */
+    MLParam_file.open(MLParam_Filename.c_str(), ios::in);
     ReadMetadata();
-
-    /* Read and store the points, interior elements, and surface elements.
-     We store only the points and interior elements on our rank's linear
-     partition, but the master stores the entire set of surface connectivity. */
+    MatchParamsPoints(global_points);
+    /* Read and store the parameter values */
     ReadParameterValues();
+
+    MLParam_file.close();
+
 }
 
-CMLParamReader::~CMLParamReader(void) { }
+CMLParamReader::~CMLParamReader() { }
 
 void CMLParamReader::ReadMetadata() {
 
     bool harmonic_balance = config->GetUnsteady_Simulation() == HARMONIC_BALANCE;
     bool multizone_file = config->GetMultizone_Mesh();
 
-    /*--- Open grid file ---*/
-
-    MLParam_file.open(MLParam_Filename.c_str(), ios::in);
+    /*--- Check if parameter file is open ---*/
     if (MLParam_file.fail()) {
-        SU2_MPI::Error(string("Error opening SU2 parameter file.") +
-                       string(" \n Check that the file exists."), CURRENT_FUNCTION);
+        SU2_MPI::Error(string("Error opening parameter file.") +
+                       string(" \n Check if the file exists."), CURRENT_FUNCTION);
     }
 
     /*--- If more than one, find the curent zone in the mesh file. ---*/
@@ -124,9 +125,6 @@ void CMLParamReader::ReadMetadata() {
         }
     }
 
-    /* Close the mesh file. */
-    MLParam_file.close();
-
     /* Throw an error if the parameter keyword was not found. */
     if (!foundNPARA) {
         SU2_MPI::Error(string("Could not find NPARA= keyword.") +
@@ -137,30 +135,30 @@ void CMLParamReader::ReadMetadata() {
 
 void CMLParamReader::ReadParameterValues() {
 
+    /*--- Reserve memory for the vector of parameters ---*/
+
+    ML_Parameters.reserve(numberOfMLParameters);
 
     /*--- Read the parameters into our data structure. ---*/
 
     string text_line;
     string::size_type position;
-    while (getline (MLParam_file, text_line)) {
-
-        position = text_line.find ("NPARA=",0);
-        if (position != string::npos) {
-
-            unsigned long GlobalIndex = 0;
-            while (GlobalIndex < numberOfMLParameters) {
-
-                getline(MLParam_file, text_line);
-
-
-                /*--- We only read information for this node if it is owned by this
-                 rank based upon our initial linear partitioning. ---*/
-
-                GlobalIndex++;
-            }
-        }
+    getline (MLParam_file, text_line);
+    position = text_line.find("NPARA=",0);
+    while (MLParam_file.is_open() && (position != string::npos) ) {
+        double par_val{0.0};
+        MLParam_file >> par_val;
+        ML_Parameters.push_back(par_val);
     }
 
-    MLParam_file.close();
 
+}
+
+
+void CMLParamReader::MatchParamsPoints(unsigned long global_points) {
+    if(numberOfMLParameters != global_points){
+        SU2_MPI::Error(string("Mismatch between the number of parameters and number of points in the problem ") +
+                       string(" \n Check the parameter file."),
+                       CURRENT_FUNCTION);
+    }
 }

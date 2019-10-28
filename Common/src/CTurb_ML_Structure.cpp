@@ -1,7 +1,6 @@
 /*!
- * \file CMLParamReader.hpp
- * \brief Header file for the class CMLParamReader.
- *        The implementations are in the <i>CMLParamReader.cpp</i> file.
+ * \file CTurb_ML_Structure.cpp
+ * \brief Class for enhancing the turbulence model with machine learning.
  * \author Rohit P.
  * \version 6.2.0 "Falcon"
  *
@@ -38,43 +37,26 @@
 
 #pragma once
 
-#include "CMeshReaderFVM.hpp"
 #include "CTurb_ML_Structure.hpp"
+#include "./mpi_structure.hpp"
 
-/*!
- * \class CMLParamReader
- * \brief Reads a native SU2 file containing values of machine learning parameter at each grid point.
- * \author: Rohit P.
- */
-class CMLParamReader: public CMeshReaderFVM {
-friend class CTurbML;
-private:
-    unsigned short myZone, nZones;
-    unsigned long numberOfMLParameters; /*!< \brief Number of parameter values in the parameter file. */
-    string MLParam_Filename; /*!< \brief Name of the SU2 Parameter file being read. */
-    ifstream MLParam_file;  /*!< \brief File object for the SU2 ASCII mesh file. */
-    std::vector<su2double> ML_Parameters; /*!< \brief Vector containing the parameter values. */
-    /*!
-     * \brief Reads all SU2 ASCII mesh metadata and checks for errors.
-     */
-    void ReadMetadata();
-    /*!
-     * \brief Reads the grid points from an SU2 zone into linear partitions across all ranks.
-     */
-    void ReadParameterValues();
-public:
-    /*!
-     * \brief Constructor of the CMLParamReader class.
-     */
-    CMLParamReader(CConfig *val_config,
-                   unsigned short val_iZone,
-                   unsigned short val_nZone,
-                   unsigned long global_points);
-    /*!
-     * \brief Destructor of the CMLParamReader class.
-     */
-    ~CMLParamReader();
+#include <cmath>
+#include <iostream>
+#include <cstdlib>
+#include <vector>
 
-    //TODO: function to check if numbers of parameters and points match.
-    void MatchParamsPoints(unsigned long global_points);
-};
+#include "config_structure.hpp"
+
+/*
+     * \brief  Constructor of the class CTurbML
+     * \param[in] nParam - Number of Parameters of the Turbulence model.
+     * \param[in] config - Definition of the particular problem.
+*/
+CTurbML::CTurbML(CMLParamReader *pReader){
+    ParamContainer = pReader->ML_Parameters;
+    nParameters = pReader->numberOfMLParameters;
+}
+
+CTurbML::~CTurbML() {
+
+}
