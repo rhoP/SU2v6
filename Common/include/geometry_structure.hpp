@@ -39,6 +39,7 @@
 #pragma once
 
 #include "./mpi_structure.hpp"
+#include "./CTurb_ML_Structure.hpp"
 
 #ifdef HAVE_METIS
   #include "metis.h"
@@ -340,7 +341,7 @@ public:
   su2double **TangGridVelIn, **TangGridVelOut; /*! <\brief Average tangential rotational speed at each span wise section for each turbomachinery marker.*/
   su2double **SpanAreaIn, **SpanAreaOut; /*! <\brief Area at each span wise section for each turbomachinery marker.*/
   su2double **TurboRadiusIn, **TurboRadiusOut; /*! <\brief Radius at each span wise section for each turbomachinery marker*/
-
+  CTurbML *MLParams=nullptr;  /*! <\brief Container of machine learning parameters for turbulence modeling*/
   unsigned short nCommLevel;		/*!< \brief Number of non-blocking communication levels. */
   
   short *Marker_All_SendRecv;
@@ -1686,6 +1687,7 @@ public:
    */
   virtual void ComputeMeshQualityStatistics(CConfig *config);
 
+
 };
 
 /*!
@@ -2010,7 +2012,13 @@ public:
    */
   void LoadUnpartitionedSurfaceElements(CConfig        *config,
                                         CMeshReaderFVM *mesh);
-  
+    /*!
+   * \brief Routine to load the machine learning parameter values into the proper SU2 data structures.
+   * \param[in] config - definition of the particular problem.
+   * \param[in] mesh   - mesh reader object containing the current zone data.
+   */
+    void LoadMLParameters(CConfig        *config,
+                          CMeshReaderFVM *mesh);
   /*!
    * \brief Prepares the grid point adjacency based on a linearly partitioned mesh object needed by ParMETIS for graph partitioning in parallel.
    * \param[in] config - Definition of the particular problem.

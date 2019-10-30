@@ -47,6 +47,8 @@
 #include "CMLParamReader.hpp"
 
 
+class CMLParamReader;
+
 /*!
  * \class CTurbML
  * \brief Main class for learning the turbulence model.
@@ -57,18 +59,26 @@
 class CTurbML {
 
 private:
-    unsigned long nParameters;           /*! <\brief Number of machine learning parameters for turbulence modeling*/
-    vector<su2double> ParamContainer;     /*! <\brief Vector containing the machine learning parameter values for turbulence modeling*/
-
+    CConfig *config; /*!< \brief Local pointer to the config parameter object. */
+    unsigned long numberOfMLParameters; /*!< \brief Number of parameter values in the parameter file. */
+    string MLParam_Filename; /*!< \brief Name of the SU2 Parameter file being read. */
+    ifstream MLParam_file;  /*!< \brief File object for the SU2 ASCII mesh file. */
+    std::vector<su2double> ML_Parameters; /*!< \brief Vector containing the parameter values. */
+    /*!
+     * \brief Reads all SU2 ASCII mesh metadata and checks for errors.
+     */
+    void ReadMetadata();
+    /*!
+     * \brief Reads the grid points from an SU2 zone into linear partitions across all ranks.
+     */
+    void ReadParameterValues();
 public:
     /*!
-     * \overload  Constructor of the class CTurbML
-     * \param[in] nParam - Number of Parameters of the Turbulence model.
-     * \param[in] config - Definition of the particular problem.
+     * \brief Constructor of the CMLParamReader class.
      */
-    CTurbML(CMLParamReader *pReader);
+    CTurbML(CConfig *val_config, unsigned long global_points);
     /*!
-     * \brief Destructor of the class.
+     * \brief Destructor of the CMLParamReader class.
      */
     ~CTurbML();
     /*!
@@ -76,25 +86,32 @@ public:
      * \param[in] par_index - Index of point.
      * \return Value of the machine learning parameter.
      */
-    su2double Get_iParamML(unsigned long par_index) {return ParamContainer[par_index]; }
+    su2double Get_iParamML(unsigned long par_index) {return ML_Parameters[par_index]; }
     /*!
      * \brief Set the machine learning parameter.
      * \param[in] par_index - Index of point.
      * \param[in] val_mlparam - New value of the machine learning parameter.
      */
     void Set_iParamML(su2double val_mlparam, unsigned long par_index) {
-        this->ParamContainer[par_index] = val_mlparam;
+        ML_Parameters[par_index] = val_mlparam;
     }
     /*!
      * \brief Get the number of machine learning parameters.
      * \return Value of the machine learning parameter.
      */
-    unsigned long Get_nParamML() {return nParameters; }
+    unsigned long Get_nParamML() {return numberOfMLParameters; }
 
     /*!
      * \brief Set the number of machine learning parameters.
      * \return Value of the machine learning parameter.
      */
-    void Set_nParamsML(unsigned long val_nParams) {nParameters = val_nParams; }
+    void Set_nParamsML(unsigned long val_nParams) {numberOfMLParameters = val_nParams; }
+
+    /*!
+     * \brief Match the number of parameters with the global number of points.
+     * \return global number of points.
+     */
+    void MatchParamsPoints(unsigned long global_points);
+
 
 };

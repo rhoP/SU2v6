@@ -41,15 +41,16 @@
 #include "../include/toolboxes/CLinearPartitioner.hpp"
 #include "../include/element_structure.hpp"
 #include "../include/CSU2ASCIIMeshReaderFVM.hpp"
-#include "../include/CMLParamReader.hpp"
 #include "../include/CCGNSMeshReaderFVM.hpp"
 #include "../include/CRectangularMeshReaderFVM.hpp"
 #include "../include/CBoxMeshReaderFVM.hpp"
 #include "../include/CMultiGridQueue.hpp"
+#include "../include/CTurb_ML_Structure.hpp"
 #include <iomanip>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <iterator>
+#include <memory>
 
 /*--- Epsilon definition ---*/
 
@@ -7488,14 +7489,6 @@ void CPhysicalGeometry::Read_Mesh_FVM(CConfig        *config,
       break;
   }
 
-  /*--- Read the machine learning parameter file for the turbulence modeling problem---*/
-
-  /*if(config ->GetKind_Turb_Model() == 8){
-       CMLParamReader *MLParam = new CMLParamReader(config, val_iZone, val_nZone);
-       cout << *MLParam << endl;
-  }*/
-
-
   /*--- Store the dimension of the problem ---*/
   
   nDim = MeshFVM->GetDimension();
@@ -7516,8 +7509,9 @@ void CPhysicalGeometry::Read_Mesh_FVM(CConfig        *config,
   } else if (rank == MASTER_NODE) {
     cout << Global_nPoint << " grid points." << endl;
   }
-  
-  /*--- Store the local and global number of interior elements. ---*/
+
+
+    /*--- Store the local and global number of interior elements. ---*/
   
   nElem              = MeshFVM->GetNumberOfLocalElements();
   Global_nElem       = MeshFVM->GetNumberOfGlobalElements();
@@ -7531,7 +7525,6 @@ void CPhysicalGeometry::Read_Mesh_FVM(CConfig        *config,
   
   /*--- Load the grid points, volume elements, and surface elements
    from the mesh object into the proper SU2 data structures. ---*/
-  
   LoadLinearlyPartitionedPoints(config,         MeshFVM);
   LoadLinearlyPartitionedVolumeElements(config, MeshFVM);
   LoadUnpartitionedSurfaceElements(config,      MeshFVM);
@@ -7544,7 +7537,19 @@ void CPhysicalGeometry::Read_Mesh_FVM(CConfig        *config,
    delete the mesh reader object. ---*/
   
   if (MeshFVM != NULL) delete MeshFVM;
-  
+  /*--- Load the machine learning parameter file for the turbulence modeling problem---*/
+
+
+  if(config ->GetKind_Turb_Model() == 8){
+       MLParams = new CTurbML(config, Global_nPoint);
+       //cout << pReadParam->printipar(13288) << endl;
+       //cout << pReadParam ->printsize() << endl;
+       /* --- load ML parameters from the file reader into its container --- */
+      // MLParams->loadParams(*pReadParam);
+  }
+  cout << MLParams->Get_nParamML() << endl;
+  cout << MLParams->Get_iParamML(1) << endl;
+
 }
 
 void CPhysicalGeometry::LoadLinearlyPartitionedPoints(CConfig        *config,
@@ -15577,6 +15582,11 @@ void CPhysicalGeometry::Compute_Nacelle(CConfig *config, bool original_surface,
   delete [] ToC;
   delete [] Twist;
   
+}
+
+
+void CPhysicalGeometry::LoadMLParameters(CConfig *config, CMeshReaderFVM *mesh) {
+
 }
 
 CMultiGridGeometry::CMultiGridGeometry(CGeometry **geometry, CConfig *config_container, unsigned short iMesh) : CGeometry() {
