@@ -4405,7 +4405,7 @@ CTurbSA_MLSolver::CTurbSA_MLSolver(void) : CTurbSolver() {
 
 }
 
-CTurbSA_MLSolver::CTurbSA_MLSolver(CGeometry *geometry, CConfig *config, unsigned short iMesh, CFluidModel* FluidModel)
+CTurbSA_MLSolver::CTurbSA_MLSolver(CGeometry *geometry, CConfig *config, unsigned short iMesh, CFluidModel* FluidModel, CTurbML *param_container)
         : CTurbSolver(geometry, config) {
     unsigned short iVar, iDim, nLineLets;
     unsigned long iPoint;
@@ -4571,9 +4571,10 @@ CTurbSA_MLSolver::CTurbSA_MLSolver(CGeometry *geometry, CConfig *config, unsigne
 
     /*--- Initialize the solution to the far-field state everywhere. ---*/
 
-    for (iPoint = 0; iPoint < nPoint; iPoint++)
-        node[iPoint] = new CTurbSAVariable(nu_tilde_Inf, muT_Inf, nDim, nVar, config);
-
+    for (iPoint = 0; iPoint < nPoint; iPoint++) {
+        node[iPoint] = new CTurbSA_MLVariable(nu_tilde_Inf, muT_Inf, nDim, nVar, config,
+                                              param_container->Get_iParamML(param_container->RCM_ordering[iPoint]), param_container->RCM_ordering[iPoint]);
+    }
     /*--- MPI solution ---*/
 
     InitiateComms(geometry, config, SOLUTION_EDDY);

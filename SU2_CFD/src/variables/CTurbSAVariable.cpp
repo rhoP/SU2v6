@@ -114,7 +114,7 @@ CTurbSAVariable::~CTurbSAVariable(void) {}
 CTurbSA_MLVariable::CTurbSA_MLVariable(void) : CTurbVariable() { }
 
 CTurbSA_MLVariable::CTurbSA_MLVariable(su2double val_nu_tilde, su2double val_muT, unsigned short val_nDim,
-                                 unsigned short val_nvar, CConfig *config) : CTurbVariable(val_nDim, val_nvar, config) {
+                                 unsigned short val_nvar, CConfig *config, su2double val_mlparam, unsigned long val_index) : CTurbVariable(val_nDim, val_nvar, config) {
 
     bool dual_time = ((config->GetUnsteady_Simulation() == DT_STEPPING_1ST) ||
                       (config->GetUnsteady_Simulation() == DT_STEPPING_2ND));
@@ -132,6 +132,10 @@ CTurbSA_MLVariable::CTurbSA_MLVariable(su2double val_nu_tilde, su2double val_muT
     }
 
     DES_LengthScale = 0.0;
+
+    /*--- Allocate machine learning parameters and indexes ---*/
+    ML_Param = val_mlparam;
+    original_index = val_index;
 
 }
 

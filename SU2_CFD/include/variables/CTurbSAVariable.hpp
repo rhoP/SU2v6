@@ -136,11 +136,11 @@ public:
 class CTurbSA_MLVariable : public CTurbVariable {
 
 private:
-    su2double gamma_BC; /*!< \brief Value of the intermittency for the BC trans. model. */
+    su2double gamma_BC;             /*!< \brief Value of the intermittency for the BC trans. model. */
     su2double DES_LengthScale;
     su2double Vortex_Tilting;
-    std::vector<su2double> ML_Params;
-    std::vector<unsigned long> RCM_Ordering;
+    su2double ML_Param;             /*!< \brief Value of the machine learning parameter for turbulence modeling. */
+    unsigned long original_index;   /*!< \brief Original index of node before RCM reordering */
 public:
     /*!
      * \brief Constructor of the class.
@@ -155,7 +155,8 @@ public:
      * \param[in] val_nvar - Number of variables of the problem.
      * \param[in] config - Definition of the particular problem.
      */
-    CTurbSA_MLVariable(su2double val_nu_tilde, su2double val_muT, unsigned short val_nDim, unsigned short val_nvar, CConfig *config);
+    CTurbSA_MLVariable(su2double val_nu_tilde, su2double val_muT, unsigned short val_nDim,
+                       unsigned short val_nvar, CConfig *config, su2double val_mlparam, unsigned long val_index);
 
     /*!
      * \brief Destructor of the class.
@@ -209,19 +210,32 @@ public:
      * \return Value of the DES length Scale
      */
     inline su2double GetVortex_Tilting() {return Vortex_Tilting; }
-/*!
+    /*!
      * \brief Get the machine learning parameter.
      * \param[in] par_index - Index of point.
      * \return Value of the machine learning parameter.
      */
-    su2double Get_iParamML(unsigned long par_index) {return ML_Params[par_index]; }
+    su2double GetMLParam() {return ML_Param; }
     /*!
      * \brief Set the machine learning parameter.
      * \param[in] par_index - Index of point.
      * \param[in] val_mlparam - New value of the machine learning parameter.
      */
-    void Set_iParamML(su2double val_mlparam, unsigned long par_index) {
-        ML_Params[par_index] = val_mlparam;
+    void SetMLParam(su2double val_mlparam) {
+        ML_Param = val_mlparam;
+    }
+    /*!
+     * \brief Get the original index.
+     * \param[in] par_index - Index of point.
+     * \return Value of the machine learning parameter.
+     */
+    su2double GetIndex() {return original_index; }
+    /*!
+     * \brief Set the original index.
+     * \param[in] val_index - New value of the index.
+     */
+    void SetIndex(unsigned long val_index) {
+        original_index = val_index;
     }
 };
 

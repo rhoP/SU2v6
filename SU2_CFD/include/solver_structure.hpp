@@ -9816,7 +9816,7 @@ public:
      * \param[in] iMesh - Index of the mesh in multigrid computations.
      * \param[in] FluidModel
      */
-    CTurbSA_MLSolver(CGeometry *geometry, CConfig *config, unsigned short iMesh, CFluidModel* FluidModel);
+    CTurbSA_MLSolver(CGeometry *geometry, CConfig *config, unsigned short iMesh, CFluidModel* FluidModel, CTurbML *param_container);
 
     /*!
      * \brief Destructor of the class.
