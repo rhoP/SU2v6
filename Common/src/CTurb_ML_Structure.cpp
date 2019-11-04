@@ -104,7 +104,7 @@ void CTurbML::ReadParameterValues() {
     /*--- Reserve memory for the vector of parameters ---*/
 
     ML_Parameters.reserve(numberOfMLParameters);
-    cout << "Reading the parameter values. " << endl;
+    cout << "Reading the machine learning parameters. " << endl;
     /*--- Read the parameters into our data structure. ---*/
 
     string text_line;

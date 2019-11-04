@@ -305,7 +305,6 @@ protected:
 	nMarker;				/*!< \brief Number of different markers of the mesh. */
   unsigned short MGLevel;         /*!< \brief The mesh level index for the current geometry container. */
   unsigned long Max_GlobalPoint;  /*!< \brief Greater global point in the domain local structure. */
-  CTurbML *MLParams=nullptr;  /*! <\brief Container of machine learning parameters for turbulence modeling*/
 
     /* --- Custom boundary variables --- */
   su2double **CustomBoundaryTemperature;
@@ -743,6 +742,12 @@ public:
    * \param[in] config - Definition of the particular problem.
 	 */
 	virtual void SetRCM_Ordering(CConfig *config);
+    /*!
+     * \brief Overload: A virtual member.
+   * \param[in] config - Definition of the particular problem.
+     * \param[in] param_container - container for machine learning parameters.
+     */
+	virtual void SetRCM_Ordering(CConfig *config, CTurbML *&param_container);
   
 	/*!
 	 * \brief A virtual member.
@@ -2013,13 +2018,6 @@ public:
    */
   void LoadUnpartitionedSurfaceElements(CConfig        *config,
                                         CMeshReaderFVM *mesh);
-    /*!
-   * \brief Routine to load the machine learning parameter values into the proper SU2 data structures.
-   * \param[in] config - definition of the particular problem.
-   * \param[in] mesh   - mesh reader object containing the current zone data.
-   */
-    void LoadMLParameters(CConfig        *config,
-                          CMeshReaderFVM *mesh);
   /*!
    * \brief Prepares the grid point adjacency based on a linearly partitioned mesh object needed by ParMETIS for graph partitioning in parallel.
    * \param[in] config - Definition of the particular problem.
@@ -2059,7 +2057,14 @@ public:
    * \param[in] config - Definition of the particular problem.
 	 */
 	void SetRCM_Ordering(CConfig *config);
-  
+
+    /*!
+	 * \brief Overload: Set a renumbering using a Reverse Cuthill-McKee Algorithm
+     * \param[in] config - Definition of the particular problem.
+     * \param[in] param_container - container for machine learning parameters.
+	 */
+    void SetRCM_Ordering(CConfig *config, CTurbML *&param_container);
+
 	/*!
 	 * \brief Function declaration to avoid partially overridden classes.
 	 * \param[in] geometry - Geometrical definition of the problem.

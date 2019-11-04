@@ -521,7 +521,7 @@ void CSourcePieceWise_TurbSA_ML::ComputeResidual(su2double *val_residual, su2dou
     /*
     *  --- Get the machine learning parameter for the corresponding
     */
-    // ML_Param = config -> GetMLParam()
+    //ML_Param = config -> GetMLParam()
 
     if (incompressible) {
         Density_i = V_i[nDim+2];

@@ -122,7 +122,8 @@ protected:
             PyWrapNodalForceDensity[3],         /*!< \brief This is used to store the force density at each vertex. */
             PyWrapNodalHeatFlux[3];             /*!< \brief This is used to store the heat flux at each vertex. */
   bool dummy_geometry;
-  
+  CTurbML *MLParams=nullptr;                    /*! <\brief Container of machine learning parameters for turbulence modeling*/
+
 public:
 
   /*! 

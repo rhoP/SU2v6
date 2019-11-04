@@ -38,6 +38,7 @@
 #pragma once
 
 #include "CTurbVariable.hpp"
+#include <vector>
 
 /*!
  * \class CTurbSAVariable
@@ -123,3 +124,104 @@ public:
   inline su2double GetVortex_Tilting() {return Vortex_Tilting; }
 
 };
+
+
+/*!
+ * \class CTurbSA_MLVariable
+ * \brief Class for defining the variables of the turbulence model with machine learning
+ * \ingroup Turbulence_Model
+ * \author Rohit P.
+ */
+
+class CTurbSA_MLVariable : public CTurbVariable {
+
+private:
+    su2double gamma_BC; /*!< \brief Value of the intermittency for the BC trans. model. */
+    su2double DES_LengthScale;
+    su2double Vortex_Tilting;
+    std::vector<su2double> ML_Params;
+    std::vector<unsigned long> RCM_Ordering;
+public:
+    /*!
+     * \brief Constructor of the class.
+     */
+    CTurbSA_MLVariable(void);
+
+    /*!
+     * \overload
+     * \param[in] val_nu_tilde - Turbulent variable value (initialization value).
+     * \param[in] val_muT  - The eddy viscosity
+     * \param[in] val_nDim - Number of dimensions of the problem.
+     * \param[in] val_nvar - Number of variables of the problem.
+     * \param[in] config - Definition of the particular problem.
+     */
+    CTurbSA_MLVariable(su2double val_nu_tilde, su2double val_muT, unsigned short val_nDim, unsigned short val_nvar, CConfig *config);
+
+    /*!
+     * \brief Destructor of the class.
+     */
+    ~CTurbSA_MLVariable(void);
+
+    /*!
+     * \brief Set the harmonic balance source term.
+     * \param[in] val_var - Index of the variable.
+     * \param[in] val_source - Value of the harmonic balance source term. for the index <i>val_var</i>.
+     */
+    inline void SetHarmonicBalance_Source(unsigned short val_var, su2double val_source) {HB_Source[val_var] = val_source; }
+
+    /*!
+     * \brief Get the harmonic balance source term.
+     * \param[in] val_var - Index of the variable.
+     * \return Value of the harmonic balance source term for the index <i>val_var</i>.
+     */
+    inline su2double GetHarmonicBalance_Source(unsigned short val_var) {return HB_Source[val_var]; }
+
+    /*!
+     * \brief Get the intermittency of the BC transition model.
+     * \return Value of the intermittency of the BC transition model.
+     */
+    inline su2double GetGammaBC(void) {return gamma_BC; }
+
+    /*!
+     * \brief Set the intermittency of the BC transition model.
+     * \param[in] val_gamma - New value of the intermittency.
+     */
+    inline void SetGammaBC(su2double val_gamma) {gamma_BC = val_gamma; }
+
+    /*!
+     * \brief Get the DES length scale
+     * \return Value of the DES length Scale.
+     */
+    inline su2double GetDES_LengthScale(void) {return DES_LengthScale; }
+
+    /*!
+     * \brief Set the DES Length Scale.
+     */
+    inline void SetDES_LengthScale(su2double val_des_lengthscale) {DES_LengthScale = val_des_lengthscale; }
+
+    /*!
+     * \brief Set the vortex tilting measure for computation of the EDDES length scale
+     */
+    void SetVortex_Tilting(su2double **PrimGrad_Flow, su2double* Vorticity, su2double LaminarViscosity);
+
+    /*!
+     * \brief Get the vortex tilting measure for computation of the EDDES length scale
+     * \return Value of the DES length Scale
+     */
+    inline su2double GetVortex_Tilting() {return Vortex_Tilting; }
+/*!
+     * \brief Get the machine learning parameter.
+     * \param[in] par_index - Index of point.
+     * \return Value of the machine learning parameter.
+     */
+    su2double Get_iParamML(unsigned long par_index) {return ML_Params[par_index]; }
+    /*!
+     * \brief Set the machine learning parameter.
+     * \param[in] par_index - Index of point.
+     * \param[in] val_mlparam - New value of the machine learning parameter.
+     */
+    void Set_iParamML(su2double val_mlparam, unsigned long par_index) {
+        ML_Params[par_index] = val_mlparam;
+    }
+};
+

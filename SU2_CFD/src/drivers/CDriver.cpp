@@ -359,7 +359,12 @@ void CDriver::Postprocessing() {
   }
   delete [] numerics_container;
   if (rank == MASTER_NODE) cout << "Deleted CNumerics container." << endl;
-  
+
+  if(MLParams != nullptr){
+      delete MLParams;
+      cout << "Deleted machine learning parameter container" << endl;
+  }
+
   for (iZone = 0; iZone < nZone; iZone++) {
     for (iInst = 0; iInst < nInst[iZone]; iInst++){
       Integration_Postprocessing(integration_container[iZone],
@@ -749,12 +754,30 @@ void CDriver::Geometrical_Preprocessing_FVM(CConfig *config, CGeometry **&geomet
   
   if (rank == MASTER_NODE) cout << "Setting point connectivity." << endl;
   geometry[MESH_0]->SetPoint_Connectivity();
-  
+
+  /*--- Load the machine learning parameter file for the turbulence modeling problem---*/
+  if(config->GetKind_Turb_Model()==8){
+      unsigned long nPoint = geometry[MESH_0]->GetnPoint();
+      MLParams = new CTurbML(config,nPoint);
+      cout << MLParams->Get_nParamML() << " Machine learning parameters." << endl;
+      /*--- Allocate machine learning parameters to each point ---*/
+      //  for(unsigned long Point_iter = 0; Point_iter < nPoint; Point_iter++){
+      //      geometry[MESH_0]->SetML node[iPoint]->SetMLParam(MLParams->Get_iParamML(iPoint));
+      //  }
+  }
+
   /*--- Renumbering points using Reverse Cuthill McKee ordering ---*/
   
   if (rank == MASTER_NODE) cout << "Renumbering points (Reverse Cuthill McKee Ordering)." << endl;
-  geometry[MESH_0]->SetRCM_Ordering(config);
-  
+  if(config->GetKind_Turb_Model()==8){
+      /*--- Storing the resultant vector of RCM ordering for machine learning parameters---*/
+      geometry[MESH_0]->SetRCM_Ordering(config, MLParams);
+  }
+  else
+    geometry[MESH_0]->SetRCM_Ordering(config);
+
+
+
   /*--- recompute elements surrounding points, points surrounding points ---*/
   
   if (rank == MASTER_NODE) cout << "Recomputing point connectivity." << endl;
@@ -1162,10 +1185,15 @@ void CDriver::Solver_Preprocessing(CConfig* config, CGeometry** geometry, CSolve
       if (iMGlevel == MESH_0) DOFsPerPoint += solver[iMGlevel][FLOW_SOL]->GetnVar();
     }
     if (turbulent) {
-      if (spalart_allmaras || e_spalart_allmaras || comp_spalart_allmaras || e_comp_spalart_allmaras || neg_spalart_allmaras ||ml_spalart_allmaras) {
+      if (spalart_allmaras || e_spalart_allmaras || comp_spalart_allmaras || e_comp_spalart_allmaras || neg_spalart_allmaras) {
         solver[iMGlevel][TURB_SOL] = new CTurbSASolver(geometry[iMGlevel], config, iMGlevel, solver[iMGlevel][FLOW_SOL]->GetFluidModel() );
         solver[iMGlevel][FLOW_SOL]->Preprocessing(geometry[iMGlevel], solver[iMGlevel], config, iMGlevel, NO_RK_ITER, RUNTIME_FLOW_SYS, false);
         solver[iMGlevel][TURB_SOL]->Postprocessing(geometry[iMGlevel], solver[iMGlevel], config, iMGlevel);
+      }
+      else if(ml_spalart_allmaras){
+          solver[iMGlevel][TURB_SOL] = new CTurbSA_MLSolver(geometry[iMGlevel], config, iMGlevel, solver[iMGlevel][FLOW_SOL]->GetFluidModel() );
+          solver[iMGlevel][FLOW_SOL]->Preprocessing(geometry[iMGlevel], solver[iMGlevel], config, iMGlevel, NO_RK_ITER, RUNTIME_FLOW_SYS, false);
+          solver[iMGlevel][TURB_SOL]->Postprocessing(geometry[iMGlevel], solver[iMGlevel], config, iMGlevel);
       }
       else if (menter_sst) {
         solver[iMGlevel][TURB_SOL] = new CTurbSSTSolver(geometry[iMGlevel], config, iMGlevel);
