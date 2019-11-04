@@ -39,7 +39,6 @@
 #pragma once
 
 #include "./mpi_structure.hpp"
-#include "./CTurb_ML_Structure.hpp"
 
 #ifdef HAVE_METIS
   #include "metis.h"
@@ -67,6 +66,8 @@ extern "C" {
 #include "config_structure.hpp"
 #include "fem_standard_element.hpp"
 #include "CMeshReaderFVM.hpp"
+#include "./CTurb_ML_Structure.hpp"
+
 
 using namespace std;
 
@@ -304,8 +305,9 @@ protected:
 	nMarker;				/*!< \brief Number of different markers of the mesh. */
   unsigned short MGLevel;         /*!< \brief The mesh level index for the current geometry container. */
   unsigned long Max_GlobalPoint;  /*!< \brief Greater global point in the domain local structure. */
+  CTurbML *MLParams=nullptr;  /*! <\brief Container of machine learning parameters for turbulence modeling*/
 
-  /* --- Custom boundary variables --- */
+    /* --- Custom boundary variables --- */
   su2double **CustomBoundaryTemperature;
   su2double **CustomBoundaryHeatFlux;
 
@@ -341,7 +343,6 @@ public:
   su2double **TangGridVelIn, **TangGridVelOut; /*! <\brief Average tangential rotational speed at each span wise section for each turbomachinery marker.*/
   su2double **SpanAreaIn, **SpanAreaOut; /*! <\brief Area at each span wise section for each turbomachinery marker.*/
   su2double **TurboRadiusIn, **TurboRadiusOut; /*! <\brief Radius at each span wise section for each turbomachinery marker*/
-  CTurbML *MLParams=nullptr;  /*! <\brief Container of machine learning parameters for turbulence modeling*/
   unsigned short nCommLevel;		/*!< \brief Number of non-blocking communication levels. */
   
   short *Marker_All_SendRecv;

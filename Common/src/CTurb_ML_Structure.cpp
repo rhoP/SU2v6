@@ -36,16 +36,14 @@
  */
 
 
-#include "CTurb_ML_Structure.hpp"
+#include "../include/CTurb_ML_Structure.hpp"
 #include "./mpi_structure.hpp"
 
-#include <cmath>
 #include <iostream>
 #include <cstdlib>
-#include <vector>
 
 #include "config_structure.hpp"
-#include "../include/toolboxes/CLinearPartitioner.hpp"
+
 /*
      * \brief  Constructor of the class CTurbML
      * \param[in] nParam - Number of Parameters of the Turbulence model.

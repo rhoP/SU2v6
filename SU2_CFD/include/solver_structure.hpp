@@ -70,6 +70,7 @@
 #include "../../Common/include/blas_structure.hpp"
 #include "../../Common/include/graph_coloring_structure.hpp"
 #include "../../Common/include/toolboxes/MMS/CVerificationSolution.hpp"
+#include "../../Common/include/CTurb_ML_Structure.hpp"
 
 using namespace std;
 
@@ -10196,6 +10197,9 @@ public:
   su2double *LinSysResReth;    /*!< \brief vector to store iterative residual of implicit linear system. */
   su2double *rhsReth;    /*!< \brief right hand side of implicit linear system. */
 };
+
+
+
 
 /*!
  * \class CAdjEulerSolver

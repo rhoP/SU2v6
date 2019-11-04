@@ -176,6 +176,7 @@ private:
   unsigned short nNeighbor;           /*!< \brief Number of neighbors. */
   bool Flip_Orientation;              /*!< \brief Flip the orientation of the normal. */
   su2double MaxLength;                /*!< \brief The maximum cell-center to cell-center length. */
+  su2double MLParam;                  /*!< \brief Value of the machine learning parameter for turbulence modeling. */
 
 public:
 	
@@ -795,7 +796,17 @@ public:
    * \param[in] adj_sol - The adjoint values of the coordinates.
    */
   void GetAdjointCoord(su2double *adj_coor);
+    /*!
+   * \brief Set the value of the machine learning parameter.
+   *
+   */
+    void SetMLParam(su2double param_val){MLParam = param_val;}
 
+    /*!
+     * \brief Get the adjoint values of the coordinates.
+     *
+     */
+    su2double GetMLParam(){return MLParam;}
 };
 
 /*! 

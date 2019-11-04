@@ -44,10 +44,7 @@
 #include <vector>
 
 #include "config_structure.hpp"
-#include "CMLParamReader.hpp"
 
-
-class CMLParamReader;
 
 /*!
  * \class CTurbML

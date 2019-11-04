@@ -2452,6 +2452,7 @@ inline void CTurbSASolver::SetFreeStream_Solution(CConfig *config) {
 
 inline su2double CTurbSASolver::GetNuTilde_Inf(void) { return nu_tilde_Inf; }
 
+
 inline void CTurbSSTSolver::SetFreeStream_Solution(CConfig *config){
   for (unsigned long iPoint = 0; iPoint < nPoint; iPoint++){
     node[iPoint]->SetSolution(0, kine_Inf);

@@ -7511,6 +7511,7 @@ void CPhysicalGeometry::Read_Mesh_FVM(CConfig        *config,
   }
 
 
+
     /*--- Store the local and global number of interior elements. ---*/
   
   nElem              = MeshFVM->GetNumberOfLocalElements();
@@ -7537,18 +7538,17 @@ void CPhysicalGeometry::Read_Mesh_FVM(CConfig        *config,
    delete the mesh reader object. ---*/
   
   if (MeshFVM != NULL) delete MeshFVM;
-  /*--- Load the machine learning parameter file for the turbulence modeling problem---*/
 
-
-  if(config ->GetKind_Turb_Model() == 8){
-       MLParams = new CTurbML(config, Global_nPoint);
-       //cout << pReadParam->printipar(13288) << endl;
-       //cout << pReadParam ->printsize() << endl;
-       /* --- load ML parameters from the file reader into its container --- */
-      // MLParams->loadParams(*pReadParam);
-  }
-  cout << MLParams->Get_nParamML() << endl;
-  cout << MLParams->Get_iParamML(1) << endl;
+    /*--- Load the machine learning parameter file for the turbulence modeling problem---*/
+    if(config->GetKind_Turb_Model()==8){
+        MLParams = new CTurbML(config, nPoint);
+        cout << MLParams->Get_nParamML() << " Machine learning parameters read." << endl;
+        /*--- Allocate machine learning parameters to each point ---*/
+        for(unsigned long iPoint = 0; iPoint < nPoint; iPoint++){
+            node[iPoint]->SetMLParam(MLParams->Get_iParamML(iPoint));
+        }
+        cout << node[150]->GetMLParam() << endl;
+    }
 
 }
 
@@ -7591,7 +7591,6 @@ void CPhysicalGeometry::LoadLinearlyPartitionedPoints(CConfig        *config,
         break;
     }
   }
-  
 }
 
 void CPhysicalGeometry::LoadLinearlyPartitionedVolumeElements(CConfig        *config,
@@ -8954,6 +8953,7 @@ void CPhysicalGeometry::SetRCM_Ordering(CConfig *config) {
   vector<unsigned long> Queue, AuxQueue, Result;
   unsigned short Degree, MinDegree, iDim, iMarker;
   bool *inQueue;
+  bool turb_ml(config->GetKind_Turb_Model()==8);
   
   inQueue = new bool [nPoint];
   
@@ -9053,33 +9053,66 @@ void CPhysicalGeometry::SetRCM_Ordering(CConfig *config) {
   }
   
   /*--- Set the new coordinates ---*/
-  
-  su2double **AuxCoord;
-  unsigned long *AuxGlobalIndex;
-  
-  AuxGlobalIndex = new unsigned long [nPoint];
-  AuxCoord = new su2double* [nPoint];
-  for (iPoint = 0; iPoint < nPoint; iPoint++)
-    AuxCoord[iPoint] = new su2double [nDim];
-  
-  for (iPoint = 0; iPoint < nPoint; iPoint++) {
-    AuxGlobalIndex[iPoint] = node[iPoint]->GetGlobalIndex();
-    for (iDim = 0; iDim < nDim; iDim++) {
-      AuxCoord[iPoint][iDim] = node[iPoint]->GetCoord(iDim);
-    }
+  if(!turb_ml) {
+      su2double **AuxCoord;
+      unsigned long *AuxGlobalIndex;
+
+
+      AuxGlobalIndex = new unsigned long[nPoint];
+      AuxCoord = new su2double *[nPoint];
+      for (iPoint = 0; iPoint < nPoint; iPoint++)
+          AuxCoord[iPoint] = new su2double[nDim];
+
+      for (iPoint = 0; iPoint < nPoint; iPoint++) {
+          AuxGlobalIndex[iPoint] = node[iPoint]->GetGlobalIndex();
+          for (iDim = 0; iDim < nDim; iDim++) {
+              AuxCoord[iPoint][iDim] = node[iPoint]->GetCoord(iDim);
+          }
+      }
+
+      for (iPoint = 0; iPoint < nPoint; iPoint++) {
+          node[iPoint]->SetGlobalIndex(AuxGlobalIndex[Result[iPoint]]);
+          for (iDim = 0; iDim < nDim; iDim++)
+              node[iPoint]->SetCoord(iDim, AuxCoord[Result[iPoint]][iDim]);
+      }
+
+      for (iPoint = 0; iPoint < nPoint; iPoint++)
+          delete[] AuxCoord[iPoint];
+      delete[] AuxCoord;
+      delete[] AuxGlobalIndex;
   }
-  
-  for (iPoint = 0; iPoint < nPoint; iPoint++) {
-    node[iPoint]->SetGlobalIndex(AuxGlobalIndex[Result[iPoint]]);
-    for (iDim = 0; iDim < nDim; iDim++)
-      node[iPoint]->SetCoord(iDim, AuxCoord[Result[iPoint]][iDim]);
+  else{
+      su2double **AuxCoord;
+      unsigned long *AuxGlobalIndex;
+      su2double *AuxParams;
+
+      AuxGlobalIndex = new unsigned long[nPoint];
+      AuxCoord = new su2double *[nPoint];
+      AuxParams = new su2double[nPoint];
+      for (iPoint = 0; iPoint < nPoint; iPoint++)
+          AuxCoord[iPoint] = new su2double[nDim];
+
+      for (iPoint = 0; iPoint < nPoint; iPoint++) {
+          AuxGlobalIndex[iPoint] = node[iPoint]->GetGlobalIndex();
+          AuxParams[iPoint] = node[iPoint]->GetMLParam();
+          for (iDim = 0; iDim < nDim; iDim++) {
+              AuxCoord[iPoint][iDim] = node[iPoint]->GetCoord(iDim);
+          }
+      }
+
+      for (iPoint = 0; iPoint < nPoint; iPoint++) {
+          node[iPoint]->SetGlobalIndex(AuxGlobalIndex[Result[iPoint]]);
+          node[iPoint]->SetMLParam(AuxParams[Result[iPoint]]);
+          for (iDim = 0; iDim < nDim; iDim++)
+              node[iPoint]->SetCoord(iDim, AuxCoord[Result[iPoint]][iDim]);
+      }
+
+      for (iPoint = 0; iPoint < nPoint; iPoint++)
+          delete[] AuxCoord[iPoint];
+      delete[] AuxCoord;
+      delete[] AuxGlobalIndex;
+      delete[] AuxParams;
   }
-  
-  for (iPoint = 0; iPoint < nPoint; iPoint++)
-    delete[] AuxCoord[iPoint];
-  delete[] AuxCoord;
-  delete[] AuxGlobalIndex;
-  
   /*--- Set the new conectivities ---*/
   
   unsigned long *InvResult;

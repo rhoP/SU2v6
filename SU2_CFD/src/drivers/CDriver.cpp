@@ -1017,7 +1017,7 @@ void CDriver::Geometrical_Preprocessing_DGFEM(CConfig* config, CGeometry **&geom
 }
 
 void CDriver::Solver_Preprocessing(CConfig* config, CGeometry** geometry, CSolver ***&solver) {
-  
+
   unsigned short iSol;
   
   if (rank == MASTER_NODE)
@@ -1162,7 +1162,7 @@ void CDriver::Solver_Preprocessing(CConfig* config, CGeometry** geometry, CSolve
       if (iMGlevel == MESH_0) DOFsPerPoint += solver[iMGlevel][FLOW_SOL]->GetnVar();
     }
     if (turbulent) {
-      if (spalart_allmaras || e_spalart_allmaras || comp_spalart_allmaras || e_comp_spalart_allmaras || neg_spalart_allmaras || ml_spalart_allmaras) {
+      if (spalart_allmaras || e_spalart_allmaras || comp_spalart_allmaras || e_comp_spalart_allmaras || neg_spalart_allmaras ||ml_spalart_allmaras) {
         solver[iMGlevel][TURB_SOL] = new CTurbSASolver(geometry[iMGlevel], config, iMGlevel, solver[iMGlevel][FLOW_SOL]->GetFluidModel() );
         solver[iMGlevel][FLOW_SOL]->Preprocessing(geometry[iMGlevel], solver[iMGlevel], config, iMGlevel, NO_RK_ITER, RUNTIME_FLOW_SYS, false);
         solver[iMGlevel][TURB_SOL]->Postprocessing(geometry[iMGlevel], solver[iMGlevel], config, iMGlevel);
@@ -4123,7 +4123,7 @@ void CFluidDriver::Run() {
   bool unsteady;
 
   /*--- Run a single iteration of a multi-zone problem by looping over all
-   zones and executing the iterations. Note that data transers between zones
+   zones and executing the iterations. Note that data transfers between zones
    and other intermediate procedures may be required. ---*/
 
   unsteady = (config_container[MESH_0]->GetUnsteady_Simulation() == DT_STEPPING_1ST) || (config_container[MESH_0]->GetUnsteady_Simulation() == DT_STEPPING_2ND);
