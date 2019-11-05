@@ -1301,7 +1301,7 @@ public:
                                su2double *val_Jacobian_muj,
                                su2double ***val_Jacobian_gradj, CConfig *config);
 
-  /*!
+    /*!
    * \brief A virtual member to compute the tangent matrix in structural problems
    * \param[in] element_container - Element structure for the particular element integrated.
    */
@@ -1494,7 +1494,16 @@ public:
 
    */
   static void tql2(su2double **V, su2double *d, su2double *e, unsigned short n);
-  
+    /*!
+     * \Overload Residual for source term integration with machine learning .
+     * \param[out] val_residual - Pointer to the total residual.
+     * \param[out] val_Jacobian_i - Jacobian of the numerical method at node i (implicit computation).
+     * \param[out] val_Jacobian_j - Jacobian of the numerical method at node j (implicit computation).
+     * \param[in] config - Definition of the particular problem.
+     * \param[in] val_param - value of the machine learning parameter.
+     */
+   virtual void ComputeResidual(su2double *val_residual, su2double **val_Jacobian_i, su2double **val_Jacobian_j, CConfig *config, su2double val_param);
+
 };
 
 /*!
@@ -4649,7 +4658,6 @@ private:
     su2double gamma_BC;
     su2double intermittency;
     su2double Production, Destruction, CrossProduction;
-    su2double ML_Param;
 
 public:
 
@@ -4673,7 +4681,7 @@ public:
      * \param[out] val_Jacobian_j - Jacobian of the numerical method at node j (implicit computation).
      * \param[in] config - Definition of the particular problem.
      */
-    void ComputeResidual(su2double *val_residual, su2double **val_Jacobian_i, su2double **val_Jacobian_j, CConfig *config);
+    void ComputeResidual(su2double *val_residual, su2double **val_Jacobian_i, su2double **val_Jacobian_j, CConfig *config, su2double val_param) override;
 
     /*!
      * \brief Residual for source term integration.
@@ -4719,11 +4727,6 @@ public:
      * \brief  ______________.
      */
     su2double GetCrossProduction(void);
-
-    /*!
-     * \brief  ______________.
-     */
-    su2double GetMLParam(void);
 };
 
 /*!

@@ -582,14 +582,14 @@ inline su2double CSourcePieceWise_TurbSA_ML::GetDestruction(void) { return Destr
 
 inline su2double CSourcePieceWise_TurbSA_ML::GetCrossProduction(void) { return CrossProduction; }
 
-inline su2double CSourcePieceWise_TurbSA_ML::GetMLParam(void) { return ML_Param; }
-
 inline su2double CUpwTurkel_Flow::GetPrecond_Beta() { return Beta; }
 
 inline void CNumerics::ComputeResidual(su2double **val_Jacobian_i, su2double *val_Jacobian_mui, su2double ***val_Jacobian_gradi, CConfig *config) { }
 
 inline void CNumerics::ComputeResidual(su2double **val_Jacobian_i, su2double *val_Jacobian_mui, su2double ***val_Jacobian_gradi, 
                   su2double **val_Jacobian_j, su2double *val_Jacobian_muj, su2double ***val_Jacobian_gradj, CConfig *config) { }
+
+inline void CNumerics::ComputeResidual(su2double *val_residual, su2double **val_Jacobian_i, su2double **val_Jacobian_j, CConfig *config, su2double val_param){ }
 
 inline void CNumerics::SetTauWall(su2double val_tauwall_i, su2double val_tauwall_j) { }
 

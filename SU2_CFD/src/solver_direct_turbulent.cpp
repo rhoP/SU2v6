@@ -4794,7 +4794,7 @@ void CTurbSA_MLSolver::Source_Residual(CGeometry *geometry, CSolver **solver_con
 
         /*--- Compute the source term ---*/
 
-        numerics->ComputeResidual(Residual, Jacobian_i, NULL, config);
+        numerics->ComputeResidual(Residual, Jacobian_i, NULL, config, node[iPoint]->GetMLParam());
 
         /*--- Store the intermittency ---*/
 

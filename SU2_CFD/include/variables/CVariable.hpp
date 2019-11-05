@@ -2650,5 +2650,29 @@ public:
    * \return value of the source term
    */
   virtual su2double GetSourceTerm_DispAdjoint(unsigned short iDim) { return 0.0; }
-
+    /*!
+     * \brief Get the machine learning parameter for turbulence modeling
+     * \return value of the parameter
+     */
+  virtual su2double GetMLParam(void){
+      return 0.0;}
+    /*!
+     * \brief Set the machine learning parameter.
+     * \param[in] par_index - Index of point.
+     * \param[in] val_mlparam - New value of the machine learning parameter.
+     */
+    virtual void SetMLParam(su2double val_mlparam) {
+    }
+    /*!
+     * \brief Get the original index.
+     * \param[in] par_index - Index of point.
+     * \return Value of the machine learning parameter.
+     */
+    virtual su2double GetMLIndex() {return 0; }
+    /*!
+     * \brief Set the original index.
+     * \param[in] val_index - New value of the index.
+     */
+    virtual void SetMLIndex(unsigned long val_index) {
+    }
 };

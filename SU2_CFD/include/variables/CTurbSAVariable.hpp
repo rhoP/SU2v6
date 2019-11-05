@@ -215,13 +215,13 @@ public:
      * \param[in] par_index - Index of point.
      * \return Value of the machine learning parameter.
      */
-    su2double GetMLParam() {return ML_Param; }
+    su2double GetMLParam() override {return ML_Param; }
     /*!
      * \brief Set the machine learning parameter.
      * \param[in] par_index - Index of point.
      * \param[in] val_mlparam - New value of the machine learning parameter.
      */
-    void SetMLParam(su2double val_mlparam) {
+    void SetMLParam(su2double val_mlparam) override {
         ML_Param = val_mlparam;
     }
     /*!
@@ -229,12 +229,12 @@ public:
      * \param[in] par_index - Index of point.
      * \return Value of the machine learning parameter.
      */
-    su2double GetIndex() {return original_index; }
+    su2double GetMLIndex() override {return original_index; }
     /*!
      * \brief Set the original index.
      * \param[in] val_index - New value of the index.
      */
-    void SetIndex(unsigned long val_index) {
+    void SetMLIndex(unsigned long val_index) override {
         original_index = val_index;
     }
 };

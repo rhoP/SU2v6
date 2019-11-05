@@ -504,7 +504,8 @@ CSourcePieceWise_TurbSA_ML::CSourcePieceWise_TurbSA_ML(unsigned short val_nDim, 
 
 CSourcePieceWise_TurbSA_ML::~CSourcePieceWise_TurbSA_ML(void) { }
 
-void CSourcePieceWise_TurbSA_ML::ComputeResidual(su2double *val_residual, su2double **val_Jacobian_i, su2double **val_Jacobian_j, CConfig *config) {
+void CSourcePieceWise_TurbSA_ML::ComputeResidual(su2double *val_residual, su2double **val_Jacobian_i,
+                                    su2double **val_Jacobian_j, CConfig *config, su2double val_param) {
 
 //  AD::StartPreacc();
 //  AD::SetPreaccIn(V_i, nDim+6);
@@ -518,10 +519,6 @@ void CSourcePieceWise_TurbSA_ML::ComputeResidual(su2double *val_residual, su2dou
     su2double vmag, rey, re_theta, re_theta_t, re_v;
     su2double tu , nu_cr, nu_t, nu_BC, chi_1, chi_2, term1, term2, term_exponential;
 
-    /*
-    *  --- Get the machine learning parameter for the corresponding
-    */
-    //ML_Param = config -> GetMLParam()
 
     if (incompressible) {
         Density_i = V_i[nDim+2];
@@ -600,10 +597,10 @@ void CSourcePieceWise_TurbSA_ML::ComputeResidual(su2double *val_residual, su2dou
             term_exponential = (term1 + term2);
             gamma_BC = 1.0 - exp(-term_exponential);
 
-            Production = ML_Param*gamma_BC*cb1*Shat*TurbVar_i[0]*Volume;
+            Production = val_param*gamma_BC*cb1*Shat*TurbVar_i[0]*Volume;
         }
         else {
-            Production = ML_Param*cb1*Shat*TurbVar_i[0]*Volume;
+            Production = val_param*cb1*Shat*TurbVar_i[0]*Volume;
         }
 
         /*--- Destruction term ---*/
@@ -964,7 +961,8 @@ CSourcePieceWise_TurbSA_E_COMP::CSourcePieceWise_TurbSA_E_COMP(unsigned short va
 
 CSourcePieceWise_TurbSA_E_COMP::~CSourcePieceWise_TurbSA_E_COMP(void) { }
 
-void CSourcePieceWise_TurbSA_E_COMP::ComputeResidual(su2double *val_residual, su2double **val_Jacobian_i, su2double **val_Jacobian_j, CConfig *config) {
+void CSourcePieceWise_TurbSA_E_COMP::ComputeResidual(su2double *val_residual,
+        su2double **val_Jacobian_i, su2double **val_Jacobian_j, CConfig *config) {
     
     //  AD::StartPreacc();
     //  AD::SetPreaccIn(V_i, nDim+6);
