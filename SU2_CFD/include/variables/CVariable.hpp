@@ -2654,7 +2654,7 @@ public:
      * \brief Get the machine learning parameter for turbulence modeling
      * \return value of the parameter
      */
-  virtual su2double GetMLParam(void){
+  virtual su2double GetMLParam(){
       return 0.0;}
     /*!
      * \brief Set the machine learning parameter.
