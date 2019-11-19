@@ -1158,6 +1158,10 @@ inline void CSolver::SetImplicitPeriodic(bool val_implicit_periodic) { implicit_
 
 inline void CSolver::SetRotatePeriodic(bool val_rotate_periodic) { rotate_periodic = val_rotate_periodic; }
 
+inline void CSolver::SetAdjointRegularizationParameter(su2double Val_RegParam) {}
+
+inline su2double CSolver::GetAdjointRegularizationParameter() {return 0.0;}
+
 inline su2double CEulerSolver::GetDensity_Inf(void) { return Density_Inf; }
 
 inline su2double CEulerSolver::GetModVelocity_Inf(void) { 
@@ -2512,3 +2516,23 @@ inline su2double CDiscAdjFEASolver::GetVal_EField(unsigned short iVal) { return 
 inline su2double CDiscAdjFEASolver::GetVal_DVFEA(unsigned short iVal) { return DV_Val[iVal]; }
 
 inline void CSolver::SetDualTime_Mesh(void){ }
+
+
+inline su2double CDiscAdjTurbMLSolver::GetTotal_Sens_Geo() { return Total_Sens_Geo; }
+
+inline su2double CDiscAdjTurbMLSolver::GetTotal_Sens_Mach() { return Total_Sens_Mach; }
+
+inline su2double CDiscAdjTurbMLSolver::GetTotal_Sens_AoA() { return Total_Sens_AoA; }
+
+inline su2double CDiscAdjTurbMLSolver::GetTotal_Sens_Press() { return Total_Sens_Press; }
+
+inline su2double CDiscAdjTurbMLSolver::GetTotal_Sens_Temp() { return Total_Sens_Temp; }
+
+inline su2double CDiscAdjTurbMLSolver::GetTotal_Sens_BPress() { return Total_Sens_BPress; }
+
+inline su2double CDiscAdjTurbMLSolver::GetTotal_Sens_Density() { return Total_Sens_Density; }
+
+inline su2double CDiscAdjTurbMLSolver::GetTotal_Sens_ModVel() { return Total_Sens_ModVel; }
+
+inline su2double CDiscAdjTurbMLSolver::GetCSensitivity(unsigned short val_marker, unsigned long val_vertex) { return CSensitivity[val_marker][val_vertex]; }
+

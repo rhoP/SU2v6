@@ -1067,7 +1067,8 @@ void CDriver::Solver_Preprocessing(CConfig* config, CGeometry** geometry, CSolve
       menter_sst, transition,
       template_solver, disc_adj, disc_adj_turb, disc_adj_heat,
       fem_dg_flow, fem_dg_shock_persson,
-      e_spalart_allmaras, comp_spalart_allmaras, e_comp_spalart_allmaras;
+      e_spalart_allmaras, comp_spalart_allmaras, e_comp_spalart_allmaras,
+      disc_adj_turb_ml;
   
   /*--- Count the number of DOFs per solution point. ---*/
   
@@ -1087,7 +1088,7 @@ void CDriver::Solver_Preprocessing(CConfig* config, CGeometry** geometry, CSolve
   template_solver  = false;
   fem_dg_flow      = false;  fem_dg_shock_persson = false;
   e_spalart_allmaras = false; comp_spalart_allmaras = false; e_comp_spalart_allmaras = false;
-  
+  disc_adj_turb_ml = false;
   bool compressible   = false;
   bool incompressible = false;
   
@@ -1149,7 +1150,12 @@ void CDriver::Solver_Preprocessing(CConfig* config, CGeometry** geometry, CSolve
       case SA_ML:     ml_spalart_allmaras = true;     break;
       default: SU2_MPI::Error("Specified turbulence model unavailable or none selected", CURRENT_FUNCTION); break;
     }
-  
+  /*--- Assign discrete adjoint for machine learning of turbulence boolean ---*/
+  if(ml_spalart_allmaras && disc_adj) {
+      disc_adj_turb_ml = true;
+  }
+
+
   /*--- Definition of the Class for the solution: solver[DOMAIN][INSTANCE][MESH_LEVEL][EQUATION]. Note that euler, ns
    and potential are incompatible, they use the same position in sol container ---*/
   
@@ -1264,9 +1270,13 @@ void CDriver::Solver_Preprocessing(CConfig* config, CGeometry** geometry, CSolve
     if (disc_adj) {
       solver[iMGlevel][ADJFLOW_SOL] = new CDiscAdjSolver(geometry[iMGlevel], config, solver[iMGlevel][FLOW_SOL], RUNTIME_FLOW_SYS, iMGlevel);
       if (iMGlevel == MESH_0) DOFsPerPoint += solver[iMGlevel][ADJFLOW_SOL]->GetnVar();
-      if (disc_adj_turb) {
+      if (disc_adj_turb && !disc_adj_turb_ml) {
         solver[iMGlevel][ADJTURB_SOL] = new CDiscAdjSolver(geometry[iMGlevel], config, solver[iMGlevel][TURB_SOL], RUNTIME_TURB_SYS, iMGlevel);
         if (iMGlevel == MESH_0) DOFsPerPoint += solver[iMGlevel][ADJTURB_SOL]->GetnVar();
+      }
+      if (disc_adj_turb_ml) {
+          solver[iMGlevel][ADJTURB_SOL] = new CDiscAdjTurbMLSolver(geometry[iMGlevel], config, solver[iMGlevel][TURB_SOL], RUNTIME_TURB_SYS, iMGlevel);
+          if (iMGlevel == MESH_0) DOFsPerPoint += solver[iMGlevel][ADJTURB_SOL]->GetnVar();
       }
       if (heat_fvm) {
         solver[iMGlevel][ADJHEAT_SOL] = new CDiscAdjSolver(geometry[iMGlevel], config, solver[iMGlevel][HEAT_SOL], RUNTIME_HEAT_SYS, iMGlevel);

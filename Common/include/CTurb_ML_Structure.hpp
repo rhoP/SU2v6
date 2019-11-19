@@ -56,7 +56,7 @@
 class CTurbML {
 
 private:
-    CConfig *config;                         /*!< \brief Local pointer to the config parameter object. */
+    CConfig *config = nullptr;                         /*!< \brief Local pointer to the config parameter object. */
     unsigned long numberOfMLParameters;      /*!< \brief Number of parameter values in the parameter file. */
     string MLParam_Filename;                 /*!< \brief Name of the SU2 Parameter file being read. */
     ifstream MLParam_file;                   /*!< \brief File object for the SU2 ASCII mesh file. */

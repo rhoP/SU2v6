@@ -4433,7 +4433,19 @@ public:
    * \param[in] config   - Definition of the particular problem.
    */
   void SetVertexTractionsAdjoint(CGeometry *geometry, CConfig *config);
-  
+
+    /*!
+     * \brief Set regularization parameter value.
+     * \param[in] Val_RegParam - value to assign to the regularization parameter.
+     */
+  virtual void SetAdjointRegularizationParameter(su2double Val_RegParam);
+
+    /*!
+       * \brief Get regularization parameter value.
+       * \param[out] returns the value of the regularization parameter.
+       */
+    virtual su2double GetAdjointRegularizationParameter();
+
 protected:
   /*!
    * \brief Allocate the memory for the verification solution, if necessary.
@@ -15947,5 +15959,304 @@ private:
                                                   su2double &kOverCv,
                                                   su2double *normalFlux);
 };
+
+
+/*!
+ * \class CDiscAdjTurbMLSolver
+ * \brief Main class for defining the discrete adjoint solver for ML of Turbulence models.
+ * \ingroup Discrete_Adjoint
+ * \author Rohit P.
+ */
+class CDiscAdjTurbMLSolver : public CSolver {
+private:
+    unsigned short KindDirect_Solver;
+    CSolver *direct_solver;
+    su2double **CSensitivity;  /*!< \brief Shape sensitivity coefficient for each boundary and vertex. */
+    su2double Total_Sens_Mach;  /*!< \brief Total mach sensitivity coefficient for all the boundaries. */
+    su2double Total_Sens_AoA;    /*!< \brief Total angle of attack sensitivity coefficient for all the boundaries. */
+    su2double Total_Sens_Geo;    /*!< \brief Total shape sensitivity coefficient for all the boundaries. */
+    su2double Total_Sens_Press;    /*!< \brief Total farfield sensitivity to pressure. */
+    su2double Total_Sens_Temp;    /*!< \brief Total farfield sensitivity to temperature. */
+    su2double Total_Sens_BPress;    /*!< \brief Total sensitivity to outlet pressure. */
+    su2double Total_Sens_Density;    /*!< \brief Total sensitivity to initial density (incompressible). */
+    su2double Total_Sens_ModVel;    /*!< \brief Total sensitivity to inlet velocity (incompressible). */
+    su2double ObjFunc_Value;        /*!< \brief Value of the objective function. */
+    su2double Regularization_Value; /*!< \brief Value of the regularization function. */
+    su2double Regularization_Parameter; /*!< \brief Value of the multiplier to the regularization function. */
+    su2double Mach, Alpha, Beta, Pressure, Temperature, BPressure, ModVel;
+
+    su2double *Solution_Geometry; /*!< \brief Auxiliary vector for the geometry solution (dimension nDim instead of nVar). */
+    vector<su2double> Sens_ML_Params; /*!< \brief Sensitivity of ML Parameters for each point. */
+
+public:
+
+    /*!
+     * \brief Constructor of the class.
+     */
+    CDiscAdjTurbMLSolver();
+
+    /*!
+     * \overload
+     * \param[in] geometry - Geometrical definition of the problem.
+     * \param[in] config - Definition of the particular problem.
+     * \param[in] iMesh - Index of the mesh in multigrid computations.
+     */
+    CDiscAdjTurbMLSolver(CGeometry *geometry, CConfig *config);
+
+    /*!
+     * \overload
+     * \param[in] geometry - Geometrical definition of the problem.
+     * \param[in] config - Definition of the particular problem.
+     * \param[in] solver - Initialize the discrete adjoint solver with the corresponding direct solver.
+     * \param[in] Kind_Solver - The kind of direct solver.
+     */
+    CDiscAdjTurbMLSolver(CGeometry *geometry, CConfig *config, CSolver* solver, unsigned short Kind_Solver, unsigned short iMesh);
+
+    /*!
+     * \brief Destructor of the class.
+     */
+    ~CDiscAdjTurbMLSolver(void);
+
+    /*!
+     * \brief Performs the preprocessing of the adjoint AD-based solver.
+     *        Registers all necessary variables on the tape. Called while tape is active.
+     * \param[in] geometry_container - The geometry container holding all grid levels.
+     * \param[in] config_container - The particular config.
+     */
+    void RegisterSolution(CGeometry *geometry, CConfig *config);
+
+    /*!
+     * \brief Performs the preprocessing of the adjoint AD-based solver.
+     *        Registers all necessary variables that are output variables on the tape.
+     *        Called while tape is active.
+     * \param[in] geometry_container - The geometry container holding all grid levels.
+     * \param[in] config_container - The particular config.
+     */
+    void RegisterOutput(CGeometry *geometry, CConfig *config);
+
+    /*!
+     * \brief Sets the adjoint values of the output of the flow (+turb.) iteration
+     *         before evaluation of the tape.
+     * \param[in] geometry - The geometrical definition of the problem.
+     * \param[in] config - The particular config.
+     */
+    void SetAdjoint_Output(CGeometry *geometry, CConfig *config);
+
+    /*!
+     * \brief Sets the adjoint values of the output of the mesh deformation iteration
+     *        before evaluation of the tape.
+     * \param[in] geometry - The geometrical definition of the problem.
+     * \param[in] config - The particular config.
+     */
+    void SetAdjoint_OutputMesh(CGeometry *geometry, CConfig *config);
+
+    /*!
+     * \brief Sets the adjoint values of the input variables of the flow (+turb.) iteration
+     *        after tape has been evaluated.
+     * \param[in] geometry - The geometrical definition of the problem.
+     * \param[in] config - The particular config.
+     */
+    void ExtractAdjoint_Solution(CGeometry *geometry, CConfig *config);
+
+    /*!
+     * \brief A virtual member.
+     * \param[in] geometry - The geometrical definition of the problem.
+     * \param[in] solver_container - The solver container holding all solutions.
+     * \param[in] config - The particular config.
+     */
+    void ExtractAdjoint_Geometry(CGeometry *geometry, CConfig *config);
+
+    /*!
+     * \brief Sets the adjoint values of the flow variables due to cross term contributions
+     * \param[in] geometry - The geometrical definition of the problem.
+     * \param[in] solver_container - The solver container holding all solutions.
+     * \param[in] config - The particular config.
+     */
+    void ExtractAdjoint_CrossTerm(CGeometry *geometry,  CConfig *config);
+
+    /*!
+     * \brief A virtual member.
+     * \param[in] geometry - The geometrical definition of the problem.
+     * \param[in] solver_container - The solver container holding all solutions.
+     * \param[in] config - The particular config.
+     */
+    void ExtractAdjoint_CrossTerm_Geometry(CGeometry *geometry,  CConfig *config);
+
+    /*!
+     * \brief A virtual member.
+     * \param[in] geometry - The geometrical definition of the problem.
+     * \param[in] solver_container - The solver container holding all solutions.
+     * \param[in] config - The particular config.
+     */
+    void ExtractAdjoint_CrossTerm_Geometry_Flow(CGeometry *geometry,  CConfig *config);
+
+    /*!
+     * \brief Register the objective function as output.
+     * \param[in] geometry - The geometrical definition of the problem.
+     */
+    void RegisterObj_Func(CConfig *config);
+
+    /*!
+     * \brief Set the surface sensitivity.
+     * \param[in] geometry - Geometrical definition of the problem.
+     * \param[in] config - Definition of the particular problem.
+     */
+    void SetSurface_Sensitivity(CGeometry *geometry, CConfig* config);
+
+    /*!
+     * \brief Extract and set the geometrical sensitivity.
+     * \param[in] geometry - Geometrical definition of the problem.
+     * \param[in] solver - The solver container holding all terms of the solution.
+     * \param[in] config - Definition of the particular problem.
+     */
+    void SetSensitivity(CGeometry *geometry, CSolver **solver, CConfig *config);
+
+    /*!
+     * \brief Set the objective function.
+     * \param[in] geometry - Geometrical definition of the problem.
+     * \param[in] config - Definition of the particular problem.
+     */
+    void SetAdj_ObjFunc(CGeometry *geometry, CConfig* config);
+
+    /*!
+     * \brief Provide the total shape sensitivity coefficient.
+     * \return Value of the geometrical sensitivity coefficient
+     *         (inviscid + viscous contribution).
+     */
+    su2double GetTotal_Sens_Geo(void);
+
+    /*!
+     * \brief Set the total Mach number sensitivity coefficient.
+     * \return Value of the Mach sensitivity coefficient
+     *         (inviscid + viscous contribution).
+     */
+    su2double GetTotal_Sens_Mach(void);
+
+    /*!
+     * \brief Set the total angle of attack sensitivity coefficient.
+     * \return Value of the angle of attack sensitivity coefficient
+     *         (inviscid + viscous contribution).
+     */
+    su2double GetTotal_Sens_AoA(void);
+
+    /*!
+     * \brief Set the total farfield pressure sensitivity coefficient.
+     * \return Value of the farfield pressure sensitivity coefficient
+     *         (inviscid + viscous contribution).
+     */
+    su2double GetTotal_Sens_Press(void);
+
+    /*!
+     * \brief Set the total farfield temperature sensitivity coefficient.
+     * \return Value of the farfield temperature sensitivity coefficient
+     *         (inviscid + viscous contribution).
+     */
+    su2double GetTotal_Sens_Temp(void);
+
+    /*!
+     * \author H. Kline
+     * \brief Get the total Back pressure number sensitivity coefficient.
+     * \return Value of the Back sensitivity coefficient
+     *         (inviscid + viscous contribution).
+     */
+    su2double GetTotal_Sens_BPress(void);
+
+    /*!
+     * \brief Get the total density sensitivity coefficient.
+     * \return Value of the density sensitivity.
+     */
+    su2double GetTotal_Sens_Density(void);
+
+    /*!
+     * \brief Get the total velocity magnitude sensitivity coefficient.
+     * \return Value of the velocity magnitude sensitivity.
+     */
+    su2double GetTotal_Sens_ModVel(void);
+
+    /*!
+     * \brief Get the shape sensitivity coefficient.
+     * \param[in] val_marker - Surface marker where the coefficient is computed.
+     * \param[in] val_vertex - Vertex of the marker <i>val_marker</i> where the coefficient is evaluated.
+     * \return Value of the sensitivity coefficient.
+     */
+    su2double GetCSensitivity(unsigned short val_marker, unsigned long val_vertex);
+
+    /*!
+     * \brief Prepare the solver for a new recording.
+     * \param[in] kind_recording - Kind of AD recording.
+     */
+    void SetRecording(CGeometry *geometry, CConfig *config);
+
+    /*!
+     * \brief Prepare the solver for a new recording.
+     * \param[in] kind_recording - Kind of AD recording.
+     */
+    void SetMesh_Recording(CGeometry **geometry, CVolumetricMovement *grid_movement,
+                           CConfig *config);
+
+    /*!
+     * \brief A virtual member.
+     * \param[in] geometry - Geometrical definition of the problem.
+     * \param[in] config - Definition of the particular problem.
+     */
+    void RegisterVariables(CGeometry *geometry, CConfig *config, bool reset = false);
+
+    /*!
+     * \brief A virtual member.
+     * \param[in] geometry - Geometrical definition of the problem.
+     * \param[in] config - Definition of the particular problem.
+     */
+    void ExtractAdjoint_Variables(CGeometry *geometry, CConfig *config);
+
+    /*!
+     * \brief Update the dual-time derivatives.
+     * \param[in] geometry - Geometrical definition of the problem.
+     * \param[in] solver_container - Container vector with all the solutions.
+     * \param[in] config - Definition of the particular problem.
+     * \param[in] iMesh - Index of the mesh in multigrid computations.
+     * \param[in] iRKStep - Current step of the Runge-Kutta iteration.
+     * \param[in] RunTime_EqSystem - System of equations which is going to be solved.
+     * \param[in] Output - boolean to determine whether to print output.
+     */
+    void Preprocessing(CGeometry *geometry, CSolver **solver_container, CConfig *config, unsigned short iMesh, unsigned short iRKStep, unsigned short RunTime_EqSystem, bool Output);
+
+    /*!
+     * \brief Load a solution from a restart file.
+     * \param[in] geometry - Geometrical definition of the problem.
+     * \param[in] solver - Container vector with all of the solvers.
+     * \param[in] config - Definition of the particular problem.
+     * \param[in] val_iter - Current external iteration number.
+     * \param[in] val_update_geo - Flag for updating coords and grid velocity.
+     */
+    void LoadRestart(CGeometry **geometry, CSolver ***solver, CConfig *config, int val_iter, bool val_update_geo);
+
+    /*!
+     * \brief Set the value of the max residual and RMS residual.
+     * \param[in] val_iterlinsolver - Number of linear iterations.
+     */
+    void ComputeResidual_Multizone(CGeometry *geometry, CConfig *config);
+
+    /*!
+     * \brief Store the BGS solution in the previous subiteration in the corresponding vector.
+     * \param[in] val_iterlinsolver - Number of linear iterations.
+     */
+    void UpdateSolution_BGS(CGeometry *geometry, CConfig *config);
+
+    /*!
+     * \brief Set regularization parameter value.
+     * \param[in] Val_RegParam - value to assign to the regularization parameter.
+     */
+    inline void SetAdjointRegularizationParameter(su2double Val_RegParam){
+        Regularization_Parameter = Val_RegParam;}
+
+    /*!
+       * \brief Get regularization parameter value.
+       * \param[out] returns the value of the regularization parameter.
+       */
+    inline su2double GetAdjointRegularizationParameter(void){return Regularization_Parameter;}
+
+};
+
+
 
 #include "solver_structure.inl"
