@@ -879,6 +879,11 @@ void COutput::SetSurfaceCSV_Adjoint(CConfig *config, CGeometry *geometry, CSolve
     if (config->GetDiscrete_Adjoint()) {
       SurfAdj_file << ",\"x_Sens\",\"y_Sens\",\"z_Sens\"";
     }
+
+    if (config->GetDiscrete_Adjoint() && config->GetKind_Turb_Model() == 8){
+        SurfAdj_file << ",\"ML_Sens";
+    }
+
     SurfAdj_file << "\n";
     for (iMarker = 0; iMarker < config->GetnMarker_All(); iMarker++) {
       if (config->GetMarker_All_Plotting(iMarker) == YES)
@@ -908,6 +913,10 @@ void COutput::SetSurfaceCSV_Adjoint(CConfig *config, CGeometry *geometry, CSolve
             SurfAdj_file << ", " << AdjSolver->node[iPoint]->GetSensitivity(0) << ", " << AdjSolver->node[iPoint]->GetSensitivity(1)
             << ", " << AdjSolver->node[iPoint]->GetSensitivity(2);
           }
+          //TODO: check global index
+          if (config->GetDiscrete_Adjoint() && config->GetKind_Turb_Model() == 8){
+                SurfAdj_file << AdjSolver->node[iPoint]->GetSensitivity_MLParam();
+            }
           SurfAdj_file << "\n";
         }
     }
@@ -5765,9 +5774,8 @@ void COutput::SetConvHistory_Body(ofstream *ConvHist_file,
             else cout << endl << " IntIter" << " ExtIter";
             if (incompressible) cout << "   Res[Press]";
             else cout << "      Res[Rho]";//, cout << "     Res[RhoE]";
-            // TODO output for the case SA_ML
             switch (config[val_iZone]->GetKind_Turb_Model()) {
-              case SA: case SA_NEG: case SA_E: case SA_E_COMP: case SA_COMP:        cout << "       Res[nu]"; break;
+            case SA: case SA_NEG: case SA_E: case SA_E_COMP: case SA_COMP: case SA_ML:       cout << "       Res[nu]"; break;
               case SST:	case SST_SUST: cout << "     Res[kine]" << "     Res[omega]"; break;
             }
 
@@ -11744,8 +11752,6 @@ void COutput::WriteTurboPerfConvHistory(CConfig *config){
   unsigned short nZone       = config->GetnZone();
   bool turbulent = ((config->GetKind_Solver() == RANS) || (config->GetKind_Solver() == DISC_ADJ_RANS));
   bool menter_sst = (config->GetKind_Turb_Model() == SST) || (config->GetKind_Turb_Model() == SST_SUST);
-  //TODO check next line
-  bool sa_ml = (config->GetKind_Turb_Model() == SA_ML);
 
   unsigned short nBladesRow, nStages;
   unsigned short iStage;
@@ -18937,7 +18943,6 @@ void COutput::Write_InletFile_Flow(CConfig *config, CGeometry *geometry, CSolver
 
   unsigned short nVar_Turb = 0;
   if (turbulent)
-      // TODO add case SA_ML
     switch (config->GetKind_Turb_Model()) {
       case SA: case SA_NEG: case SA_E: case SA_COMP: case SA_E_COMP:
         nVar_Turb = 1;

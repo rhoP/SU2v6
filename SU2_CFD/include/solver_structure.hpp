@@ -4446,6 +4446,14 @@ public:
        */
     virtual su2double GetAdjointRegularizationParameter();
 
+    /*!
+       * \brief Get parameter sensitivity.
+       * \param[in] point_index: index of the point.
+       * \param[out] returns the sensitivity of the indexed ML parameter.
+       */
+    virtual su2double GetMLParamSens(unsigned long point_index){return 0.0;}
+
+
 protected:
   /*!
    * \brief Allocate the memory for the verification solution, if necessary.
@@ -16254,6 +16262,13 @@ public:
        * \param[out] returns the value of the regularization parameter.
        */
     inline su2double GetAdjointRegularizationParameter(void){return Regularization_Parameter;}
+
+    /*!
+       * \brief Get parameter sensitivity.
+       * \param[in] point_index: index of the point.
+       * \param[out] returns the sensitivity of the indexed ML parameter.
+       */
+    inline su2double GetMLParamSens(unsigned long point_index){return Sens_ML_Params[point_index];}
 
 };
 

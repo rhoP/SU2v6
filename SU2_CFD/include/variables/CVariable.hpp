@@ -2675,4 +2675,16 @@ public:
      */
     virtual void SetMLIndex(unsigned long val_index) {
     }
+
+    /*!
+     * \brief Set the sensitivity wrt the ML Parameter at the node
+     * \param[in] val - value of the Sensitivity
+     */
+    virtual void SetSensitivity_MLParam(su2double val) {}
+
+    /*!
+     * \brief Get the Sensitivity wrt the ML Parameter at the node
+     * \return value of the Sensitivity
+     */
+    virtual su2double GetSensitivity_MLParam() {return 0.0;}
 };
