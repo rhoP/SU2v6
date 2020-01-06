@@ -914,7 +914,7 @@ void COutput::SetSurfaceCSV_Adjoint(CConfig *config, CGeometry *geometry, CSolve
             << ", " << AdjSolver->node[iPoint]->GetSensitivity(2);
           }
           //TODO: check global index
-          if (config->GetDiscrete_Adjoint() && config->GetKind_Turb_Model() == 8){
+          if ((config->GetDiscrete_Adjoint()) && (config->GetKind_Turb_Model() == 8)){
                 SurfAdj_file << AdjSolver->node[iPoint]->GetSensitivity_MLParam();
             }
           SurfAdj_file << "\n";

@@ -4440,18 +4440,32 @@ public:
      */
   virtual void SetAdjointRegularizationParameter(su2double Val_RegParam);
 
-    /*!
+  /*!
        * \brief Get regularization parameter value.
        * \param[out] returns the value of the regularization parameter.
        */
-    virtual su2double GetAdjointRegularizationParameter();
+  virtual su2double GetAdjointRegularizationParameter();
+
+  /*!
+   * \brief Get Machine Learning Parameter.
+   * \param[in] point_index: index of the point.
+   * \param[out] returns the ML Parameter value of the index.
+   */
+  virtual su2double GetMLParam(unsigned long point_index) {return 0.0;}
+
+  /*!
+   * \brief Set Machine Learning Parameter.
+   * \param[in] point_index: index of the point.
+   * \param[in] val_param: new value to be set.
+   */
+  virtual void SetMLParam(unsigned long point_index, su2double val_param) {};
 
     /*!
        * \brief Get parameter sensitivity.
        * \param[in] point_index: index of the point.
        * \param[out] returns the sensitivity of the indexed ML parameter.
        */
-    virtual su2double GetMLParamSens(unsigned long point_index){return 0.0;}
+  virtual su2double GetMLParamSens(unsigned long point_index){return 0.0;}
 
 
 protected:
@@ -15994,6 +16008,7 @@ private:
     su2double Mach, Alpha, Beta, Pressure, Temperature, BPressure, ModVel;
 
     su2double *Solution_Geometry; /*!< \brief Auxiliary vector for the geometry solution (dimension nDim instead of nVar). */
+    vector<su2double> ML_Params; /*!< \brief Values of ML Parameters for each point. */
     vector<su2double> Sens_ML_Params; /*!< \brief Sensitivity of ML Parameters for each point. */
 
 public:
@@ -16262,6 +16277,20 @@ public:
        * \param[out] returns the value of the regularization parameter.
        */
     inline su2double GetAdjointRegularizationParameter(void){return Regularization_Parameter;}
+
+    /*!
+       * \brief Get Machine Learning Parameter.
+       * \param[in] point_index: index of the point.
+       * \param[out] returns the ML Parameter value of the index.
+       */
+    su2double GetMLParam(unsigned long point_index) {return ML_Params[point_index];}
+
+    /*!
+       * \brief Set Machine Learning Parameter.
+       * \param[in] point_index: index of the point.
+       * \param[in] val_param: new value to be set.
+       */
+    void SetMLParam(unsigned long point_index, su2double val_param) {ML_Params[point_index] = val_param;}
 
     /*!
        * \brief Get parameter sensitivity.

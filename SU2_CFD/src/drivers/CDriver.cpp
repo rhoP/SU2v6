@@ -759,10 +759,10 @@ void CDriver::Geometrical_Preprocessing_FVM(CConfig *config, CGeometry **&geomet
   if(config->GetKind_Turb_Model()==8){
       unsigned long nPoint = geometry[MESH_0]->GetnPoint();
       MLParams = new CTurbML(config,nPoint);
-      cout << MLParams->Get_nParamML() << " Machine learning parameters." << endl;
+      cout << MLParams->Get_nParamML() << " Machine learning parameters found." << endl;
       /*--- Allocate machine learning parameters to each point ---*/
       //  for(unsigned long Point_iter = 0; Point_iter < nPoint; Point_iter++){
-      //      geometry[MESH_0]->SetML node[iPoint]->SetMLParam(MLParams->Get_iParamML(iPoint));
+      //      geometry[MESH_0]->node[Point_iter]->SetMLParam(MLParams->Get_iParamML(Point_iter));
       //  }
   }
 

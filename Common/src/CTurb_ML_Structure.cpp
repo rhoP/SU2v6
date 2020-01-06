@@ -60,7 +60,11 @@ CTurbML::CTurbML(CConfig  *val_config, unsigned long global_points) {
     ReadParameterValues();
 }
 
-CTurbML::~CTurbML() {}
+
+CTurbML::~CTurbML() {
+
+}
+
 
 void CTurbML::ReadMetadata() {
     MLParam_file.open(MLParam_Filename.c_str(), ios::in);

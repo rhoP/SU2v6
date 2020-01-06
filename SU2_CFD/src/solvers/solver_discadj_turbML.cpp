@@ -363,6 +363,13 @@ void CDiscAdjTurbMLSolver::RegisterVariables(CGeometry *geometry, CConfig *confi
     /*--- Here it is possible to register other variables as input that influence the flow solution
      * and thereby also the objective function. The adjoint values (i.e. the derivatives) can be
      * extracted in the ExtractAdjointVariables routine. ---*/
+
+    for (unsigned long iPoint = 0; iPoint < nPoint; iPoint++){
+        ML_Params[iPoint] = direct_solver->node[iPoint]->GetMLParam();
+        AD::RegisterInput(ML_Params[iPoint]);
+        direct_solver->node[iPoint]->SetMLParam(ML_Params[iPoint]);
+    }
+
 }
 
 void CDiscAdjTurbMLSolver::RegisterOutput(CGeometry *geometry, CConfig *config) {
@@ -595,7 +602,9 @@ void CDiscAdjTurbMLSolver::ExtractAdjoint_Variables(CGeometry *geometry, CConfig
     }
 
     /*--- Extract here the adjoint values of everything else that is registered as input in RegisterInput. ---*/
-
+    for (unsigned long iPoint = 0; iPoint < nPoint; iPoint++){
+        Sens_ML_Params[iPoint] = SU2_TYPE::GetDerivative(direct_solver->node[iPoint]->GetMLParam());
+    }
 }
 
 
