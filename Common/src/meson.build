@@ -28,7 +28,8 @@ common_src =files(['geometry_structure_fem_part.cpp',
            'CSU2ASCIIMeshReaderFVM.cpp',
            'CBoxMeshReaderFVM.cpp',
            'CCGNSMeshReaderFVM.cpp',
-           'CRectangularMeshReaderFVM.cpp'])
+           'CRectangularMeshReaderFVM.cpp',
+           'CTurb_ML_Structure.cpp'])
 
 subdir('linear_algebra')
 subdir('toolboxes')

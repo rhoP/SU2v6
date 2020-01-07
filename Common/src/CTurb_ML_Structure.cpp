@@ -37,12 +37,9 @@
 
 
 #include "../include/CTurb_ML_Structure.hpp"
-#include "./mpi_structure.hpp"
 
 #include <iostream>
 #include <cstdlib>
-
-#include "config_structure.hpp"
 
 /*
      * \brief  Constructor of the class CTurbML

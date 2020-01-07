@@ -36,7 +36,7 @@
  */
 
 #pragma once
-#include "./mpi_structure.hpp"
+#include "mpi_structure.hpp"
 
 #include <cmath>
 #include <iostream>
